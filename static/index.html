@@ -10,7 +10,7 @@
 
 </head>
 <body style="font-family: 'Arial', sans-serif;">
-<script type="text/javascript" src="/nowjs/now.js"></script>
+<!-- <script type="text/javascript" src="/nowjs/now.js"></script> -->
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="jquery.mousewheel.min.js"></script>
 <script type="text/javascript" src="jquery.nearest.min.js"></script>
@@ -48,6 +48,7 @@ $('#supportedVideoFormats').html(supportedFormats.join(' or ') + ' format')
 
 autoShowTranslation = true
 
+/*
 now.ready(function() {
 var urlParams = getUrlParameters()
 if (urlParams['lang'] != null)
@@ -111,11 +112,13 @@ if (urlParams['video'] != null && (urlParams['sub'] != null || urlParams['subpix
 }
 
 })
+*/
 </script>
 
 <div id='inputRegion' style='display:none;'>
 <!--<div style="position: fixed; top: 0; right: 0; text-align: right; font-size: small"><i>Contact: <a href="http://gkovacs.github.com">Geza Kovacs</a></i></div>-->
 <div id="inputErrorRegion" style="background-color: yellow"></div>
+<h4>* Local Player</h2>
 <h4>Instructions</h2>
 Provide a video (URL or local file), and Chinese subtitles (<a href="http://shooter.cn/">see here</a>), then press "Start Video".<br/>
 <!--
@@ -130,9 +133,9 @@ Video (<span id="supportedVideoFormats">Your browser doesn't support video, use 
 <select id="urlOrFile" onchange="urlOrFileChanged()">
   <option value="file" >Local File</option>
   <option value="url" >URL</option>
-</select>: <input type="file" accept="video/*" id="videoInputFile" style="width: 500px" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()" /><input style="display: none; width: 500px" type="text" id="videoInputURL" style=" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()" /><br />
-Chinese Subtitle (<a href="http://en.wikipedia.org/wiki/SubRip#SubRip_text_file_format">SRT</a> or ASUB format):
-<input type="file" accept=".srt,.asub" id="srtInputFile" style="width: 500px" onkeypress="subtitleUploaded()" onchange="subtitleUploaded()" onkeyup="subtitleUploaded()" />
+</select>: <input type="file" accept="video/*" id="videoInputFile" style="width: 250px" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()" /><input style="display: none; width: 250px" type="text" id="videoInputURL" style=" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()" /><br />
+Chinese Subtitle (ASUB format):
+<input type="file" accept=".asub" id="srtInputFile" style="width: 500px" onkeypress="subtitleUploaded()" onchange="subtitleUploaded()" onkeyup="subtitleUploaded()" />
 
 <br/>
 
@@ -144,22 +147,20 @@ Optional English Subtitle (<a href="http://en.wikipedia.org/wiki/SubRip#SubRip_t
 
 <textarea id="nativeSubtitleInput" style="width: 100%; height: 100px" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()"></textarea><br /><br />
 
-<input type="checkbox" id="asubDLCheckbox">  Save ASUB file to local disk<br/><br/>
-
 <button onclick="startPlayback()" disabled="true" id="startPlaybackButton">Start Video</button>
 
 </div>
 
 <div id='viewingRegion' style='display:none;'>
-<div id='fixedVideoFrame' style="position: absolute; top:0; left:0; width: 100%; height: 500px; overflow: hidden;">
+<div id='fixedVideoFrame' style="position: absolute; top:0; left:0; width: 100%; height: 650px; overflow: hidden;">
 <div id="errorRegion" style="background-color: yellow" align="center"></div>
 <div id="whiteRegion" style="background-color: white; width: 100%; position: fixed; top: 0px;" align="center"></div>
-<div align="center"><video style="position: fixed; left: 0px; top: 0px; height: 500px;" id="videoControls" ontimeupdate="onTimeChanged(this)" onerror="onVideoError(this)" onplay="videoPlaying(this)" onpause="videoPaused(this)" onfocus="this.blur()" onloadedmetadata="videoLoaded()">
+<div align="center"><video style="position: fixed; left: 0px; top: 0px; height: 650px;" id="videoControls" ontimeupdate="onTimeChanged(this)" onerror="onVideoError(this)" onplay="videoPlaying(this)" onpause="videoPaused(this)" onfocus="this.blur()" onloadedmetadata="videoLoaded()">
 </video></div>
 </div>
 
 <div id="bottomOfScreen" style="position: fixed; top: 100%; left: 100%"></div>
-<div id='bottomFrame' style="position: fixed; top: 500px; left: 0; bottom: 0; width: 100%; overflow: auto;">
+<div id='bottomFrame' style="position: fixed; top: 650px; left: 0; bottom: 0; width: 100%; overflow: auto;">
 <div id="translation" isFullTranslation='false' style="font-size: medium; display: inline-block; white-space: nowrap; position: relative"></div>
 <div id='subpRegion' align="center"><img id='subpDisplay'></img></div>
 <div align="center">

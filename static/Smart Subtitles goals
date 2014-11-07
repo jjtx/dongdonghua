@@ -1,0 +1,5 @@
+Smart Subtitles goals:
+1. make an array - statistics for a movie (sorted by most common words, and will show how many times they are used)
+2. another window to show vocabulary - in that window will have links to where it is in the movie(s)
+3. hovering over a word will tell you if it's a vocabulary word and what chapter it's from.
+4. Make a quiz / test from the lines you've been watching

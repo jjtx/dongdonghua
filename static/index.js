@@ -15,6 +15,60 @@ function nextButtonPressed() {
   gotoDialog(pdn + 1)
 }
 
+function prevButtonPressedPauseAfterDialog() {
+  var pdn = getCurrentDialogNum()
+  gotoDialogPauseAfterDialog(pdn - 1)
+}
+
+function nextButtonPressedPauseAfterDialog() {
+  var pdn = getCurrentDialogNum()
+  gotoDialogPauseAfterDialog(pdn + 1)
+}
+
+var currentWordHighlighted = -1
+
+function leftKeyPressed() {
+  var pdn = getCurrentDialogNum()
+  var tblWordCount = document.getElementById("tbl" + pdn).rows[0].cells.length -1
+  if (checkIfCurrentWordStillHighlighted(pdn) == false) {
+    onWordHover('wid_q_' + pdn +'_i_' + tblWordCount)
+    currentWordHighlighted = tblWordCount
+    return
+  }
+  if (currentWordHighlighted == 0) {
+  	onWordLeave('wid_q_' + pdn +'_i_0')
+  	currentWordHighlighted = -1
+  } else {
+    onWordHover('wid_q_' + pdn +'_i_' + (--currentWordHighlighted))
+  }
+}
+
+function rightKeyPressed() {
+  var pdn = getCurrentDialogNum()
+  var tblWordCount = document.getElementById("tbl" + pdn).rows[0].cells.length -1
+  if (checkIfCurrentWordStillHighlighted(pdn) == false) {
+    currentWordHighlighted = 0
+    onWordHover('wid_q_' + pdn +'_i_0')
+    return
+  } 
+  if (currentWordHighlighted == tblWordCount) {
+  	onWordLeave('wid_q_' + pdn +'_i_' + tblWordCount)
+  	currentWordHighlighted = -1
+  } else {
+  onWordHover('wid_q_' + pdn +'_i_' + (++currentWordHighlighted))
+  }
+}
+
+function checkIfCurrentWordStillHighlighted(dialogNumber) {
+  if (typeof dialogNumber === "undefined" || dialogNumber === null)
+    dialogNumber = getCurrentDialogNum()
+  if ($($('.wid_q_' + dialogNumber +'_i_' + currentWordHighlighted)).hasClass('currentlyHighlighted')) {	// verify the word is still highlighted
+    return true
+  } else {
+    return false
+  }
+}
+
 function clearHoverTrans() {
   $('.currentlyHighlighted').css('background-color', '')
   $('.currentlyHighlighted').removeClass('currentlyHighlighted')
@@ -28,13 +82,13 @@ function placeTranslationText(wordid) {
   var height = chineseChar.height()
   $('#translation').show()
   $('#translation').css('position', 'absolute')
-  $('#translation').css({'left': (pos.left), 'top': (pos.top + 10 - 500 + $('#bottomFrame').scrollTop() + height), })
+  $('#translation').css({'left': (pos.left), 'top': (pos.top + 10 - 650 + $('#bottomFrame').scrollTop() + height), })
 }
 
 function onWordLeave(wordid) {
   $($('.'+ wordid)).css('background-color', '')
   $($('.'+ wordid)).removeClass('currentlyHighlighted')
-  now.serverlog('left: wordid=' + wordid + ' word=' + $('#WS' + wordid).text())
+  // now.serverlog('left: wordid=' + wordid + ' word=' + $('#WS' + wordid).text())
   if (autoShowTranslation) {
     if ($('.currentlyHighlighted').length == 0)
       showFullTranslation()
@@ -64,8 +118,51 @@ function onWordHover(wordid) {
     $('#translation').html(firstDef + nextDefs)
     $('#translation').attr('isFullTranslation', 'false')
   }
-  now.serverlog('entered: wordid=' + wordid + ' word=' + $('#WS' + wordid).text())
+  // now.serverlog('entered: wordid=' + wordid + ' word=' + $('#WS' + wordid).text())
 }
+
+var initializeNativeSubtitleText = function(subtitleText, doneCallback) {
+  var nativeSubtitleGetterReal;
+  var subtitleGetter = new SubtitleRead(subtitleText);
+  window.subtitleGetter = subtitleGetter;
+  nativeSubtitleGetterReal = new SubtitleRead(subtitleText);
+  var subtitleAtTimeAsync = function(deciSec, callback) {
+    var end, idx, isOverHalfOfNativeOrTargetCovered, nend, nstart, nsubtext, start, subtext, translations, _ref, _ref1, _ref2;
+    idx = subtitleGetter.getSubtitleIndexFromTime(deciSec);
+    _ref = subtitleGetter.timesAndSubtitles[idx], start = _ref[0], end = _ref[1], subtext = _ref[2];
+    idx = nativeSubtitleGetterReal.getSubtitleIndexFromTime((start + end) / 2);
+    isOverHalfOfNativeOrTargetCovered = function(start_target, end_target, start_native, end_native) {
+      var covered_duration, native_duration, target_duration;
+      target_duration = end - start;
+      native_duration = end_native - start_native;
+      covered_duration = Math.min(end_native, end_target) - Math.max(start_target, start_native);
+      return covered_duration * 2 > Math.min(native_duration, target_duration);
+    };
+    while (idx >= 0) {
+      _ref1 = nativeSubtitleGetterReal.timesAndSubtitles[idx], nstart = _ref1[0], nend = _ref1[1], nsubtext = _ref1[2];
+      if (!isOverHalfOfNativeOrTargetCovered(start, end, nstart, nend)) {
+        break;
+      }
+      idx -= 1;
+    }
+    if (idx !== 0) {
+      idx += 1;
+    }
+    translations = [];
+    while (idx < nativeSubtitleGetterReal.timesAndSubtitles.length) {
+      _ref2 = nativeSubtitleGetterReal.timesAndSubtitles[idx], nstart = _ref2[0], nend = _ref2[1], nsubtext = _ref2[2];
+      if (translations.length > 0 && !isOverHalfOfNativeOrTargetCovered(start, end, nstart, nend)) {
+        break;
+      }
+      translations.push(nsubtext);
+      idx += 1;
+    }
+    return callback(translations.join(' '));
+  }
+  if (doneCallback != null) {
+    return doneCallback();
+  }
+};
 
 function nextAudioItem() {
   console.log(audioQueue)
@@ -79,11 +176,11 @@ function setClickPronounceEN(wordid, word) {
 $('.'+ wordid).click(function() {
   var vid = $('video')[0]
   vid.pause()
-  now.getPrononciation(word.toLowerCase(), function(nword, prononc, prurl) {
-    $('.'+wordid+'.pinyinspan').html(prononc)
-    audioQueue = [prurl]
-    nextAudioItem()
-  })
+  //now.getPrononciation(word.toLowerCase(), function(nword, prononc, prurl) {
+  //  $('.'+wordid+'.pinyinspan').html(prononc)
+  //  audioQueue = [prurl]
+  //  nextAudioItem()
+  //})
 })
 }
 
@@ -120,18 +217,32 @@ dialogStartTimesDeciSeconds = []
 
 function wordClicked(dialogNum) {
   var pd = getCurrentDialogNum()
-  gotoDialog(dialogNum)
+  gotoDialogPauseAfterDialog(dialogNum)
   var vid = $('video')[0]
-  if (dialogNum < pd) {
-    vid.pause()
-  } else {
-    vid.play()
-  }
+//  if (dialogNum < pd) {
+//    vid.pause()
+//  } else {
+//    vid.play()
+//  }
 }
 
 function gotoDialog(dialogNum, dontanimate) {
   gotoDialogNoVidSeek(dialogNum, dontanimate)
   $('video')[0].currentTime = dialogStartTimesDeciSeconds[dialogNum] / 10
+}
+
+var inPauseAfterDialog = false
+var pausedDialogNum
+
+function gotoDialogPauseAfterDialog(dialogNum, dontanimate) {
+  pausedDialogNum = dialogNum
+  gotoDialogNoVidSeek(dialogNum, dontanimate)
+  $('video')[0].currentTime = dialogStartTimesDeciSeconds[dialogNum] / 10
+  if ($('video')[0].paused) {
+    $('video')[0].play()
+  }
+  playedVideo()
+  inPauseAfterDialog = true
 }
 
 gotoDialogInProgress = false
@@ -173,7 +284,7 @@ function gotoDialogNoVidSeek(dialogNum, dontanimate, automatic) {
     setTimeout(function() {gotoDialogInProgress = false}, 200)
   }
   
-  now.serverlog('gotodialog: dialogNum=' + dialogNum + ' prevDialogNum=' + realPrevDialogNum + ' automatic=' + automatic)
+  // now.serverlog('gotodialog: dialogNum=' + dialogNum + ' prevDialogNum=' + realPrevDialogNum + ' automatic=' + automatic)
   if (autoShowTranslation) {
     showFullTranslation(dialogNum)
   }
@@ -193,12 +304,12 @@ function translateButtonPressed(n) {
 function showFullTranslation(n) {
   if (typeof n === "undefined" || n === null)
     n = getCurrentDialogNum()
-  sentence = $('.tb' + n).attr('currentSentence')
+  sentence = $('.tb' + n).attr('currentSentence') 
   firstWordId = $('.tb' + n).attr('firstWordId')
   console.log(sentence)
   clearHoverTrans()
   var currentTimeDeciSecs = $('.tb' + n).attr('startTimeDeciSeconds')
-  now.getNativeSubAtTime(currentTimeDeciSecs, function(translation) {
+  getNativeSubAtTime(currentTimeDeciSecs, function(translation) {
     if ($('.currentlyHighlighted').length != 0) return
     console.log(translation)
     $('#translation').text(translation)
@@ -208,9 +319,18 @@ function showFullTranslation(n) {
     offset.left = $(window).width()/2 - $('#translation').width()/2
     $('#translation').offset(offset)
     $('#translation').show()
-    now.serverlog('translation: firstWordId=' + firstWordId + ' translation=' + translation)
+  // now.serverlog('translation: firstWordId=' + firstWordId + ' translation=' + translation)
   })
 }
+
+var getNativeSubAtTime = function(time, callback) {
+  var endTime, idx, midTime, startTime, subLine, _ref;
+  idx = window.subtitleGetter.getSubtitleIndexFromTime(time);
+  _ref = window.asubTimesAndSubtitles[idx], startTime = _ref[0], endTime = _ref[1], subLine = _ref[2];
+  midTime = Math.floor((startTime + endTime) / 2);
+  // return nativeSubtitleGetter.subtitleAtTimeAsync(midTime, callback);
+  return window.subtitleGetter.subtitleAtTimeAsync(midTime, callback);
+};
 
 function setNewSubtitles(annotatedWordList) {
   setNewSubtitleList([[0, 1, annotatedWordList]])
@@ -219,9 +339,6 @@ function setNewSubtitles(annotatedWordList) {
 annotatedWordListListG = []
 
 function setNewSubtitleList(annotatedWordListListOrig) {
-  if (document.getElementById("asubDLCheckbox").checked === true) {
-    downloadASUBfile(annotatedWordListListOrig);
-  }
   var annotatedWordListList = []
   for (var q = 0; q < annotatedWordListListOrig.length; ++q) {
     if (annotatedWordListListOrig[q][2].length > 0) {
@@ -238,8 +355,7 @@ function downloadASUBfile(annotatedWordListListOrigDL) {
   while (originalSubtitleInputForTimes.indexOf("") > -1) {  // remove all null elements (this happens if there are more than two "\n" between subtitles)
     originalSubtitleInputForTimes.splice(originalSubtitleInputForTimes.indexOf(""),1);
   }
-  for (var q = 0; q < (annotatedWordListListOrigDL.length); ++q) {
-    console.log('q = ' + q);
+  for (var q = 0; q < annotatedWordListListOrigDL.length; ++q) {
     var newlinePositionAfterTimes = (originalSubtitleInputForTimes[q].lastIndexOf(" --> ")+16);
     asubDLstring += (originalSubtitleInputForTimes[q].slice(0,newlinePositionAfterTimes+1) + "\n");
     for (var r = 0; r < annotatedWordListListOrigDL[q][2].length; ++r) {
@@ -272,7 +388,8 @@ dialogStartTimesDeciSeconds[q] = startTimeDeciSeconds
 var startHMS = toHourMinSec(Math.round(startTimeDeciSeconds/10))
 var annotatedWordList = annotatedWordListList[q][2]
 
-nhtml.push('<table border="0" cellspacing="0">')
+//nhtml.push('<table border="0" cellspacing="0">')
+nhtml.push('<table id = tbl' + q + ' border="0" cellspacing="0">')
 
 var pinyinRow = []
 var wordRow = []
@@ -322,8 +439,8 @@ whitespaceRow.push('<td id="whitespaceS' + q + '" style="font-size: 32px">　</t
 
 }
 
-wordRow.push('<td id="translate"' + q + '" style="font-size: 32px">　</td>')
-wordRow.push('<td><button id="translate"' + q + '" style="font-size: 32px; display: none; white-space: nowrap" dialogNum="' + q + '" class="translateButton tb' + q + '" startTimeDeciSeconds="' + startTimeDeciSeconds + '" endTimeDeciSeconds="' + endTimeDeciSeconds + '" currentSentence="' + currentSentence + '" firstWordId="' + firstWordId + '" onclick="translateButtonPressed(' + q + ')">translate</button></td>')
+// wordRow.push('<td id="translate"' + q + '" style="font-size: 32px">　</td>') // remove translate button here (also remove the "translate" from this at the end of the next line: "(' + q + ')">translate</button>")
+wordRow.push('<td><button id="translate"' + q + '" style="font-size: 32px; display: none; white-space: nowrap" dialogNum="' + q + '" class="translateButton tb' + q + '" startTimeDeciSeconds="' + startTimeDeciSeconds + '" endTimeDeciSeconds="' + endTimeDeciSeconds + '" currentSentence="' + currentSentence + '" firstWordId="' + firstWordId + '" onclick="translateButtonPressed(' + q + ')"></button></td>') // remove translate button here - may cause issues
 
 nhtml.push('<col>' + pinyinRow.join('') + '</col>')
 nhtml.push('<col>' + wordRow.join('') + '</col>')
@@ -337,10 +454,14 @@ $('#caption').html(nhtml.join(''))
 
 }
 
+window.onresize = function(event) {
+  videoLoaded();
+};
+
 function videoLoaded() {
-  var videoWidth = $('video')[0].videoWidth
-  $('video').css('left', '50%')
-  $('video').css('margin-left', - Math.round(videoWidth/3.45))
+  var videoWidth = $('video')[0].clientWidth
+  // $('video').css('left', '50%')
+  $('video').css('margin-left', Math.round(Math.max(0,(viewingRegion.clientWidth-videoWidth)/2)))
 }
 
 function dialogEndTimeSec(dialogNum) {
@@ -357,7 +478,13 @@ function dialogStartTimeSec(dialogNum) {
 
 function onTimeChanged(s) {
   if (gotoDialogInProgress) return
-  if (s.currentTime > dialogEndTimeSec()) {
+  if (inPauseAfterDialog) {
+  	if ((s.currentTime > dialogStartTimeSec(pausedDialogNum + 1)) || (s.currentTime > (dialogEndTimeSec() + 1))) {   // Pause if past (end of dialog time + 1 second) or start of next dialog
+      $('video')[0].pause()
+      inPauseAfterDialog = false
+      return
+    }
+  } else if (s.currentTime > dialogEndTimeSec()) {
     var sinceEndOfDialog = s.currentTime - dialogEndTimeSec()
     var toNextDialog = dialogStartTimeSec(getCurrentDialogNum() + 1) - s.currentTime
     var betweenDialogs = Math.min(sinceEndOfDialog, toNextDialog)
@@ -380,7 +507,7 @@ function onTimeChanged(s) {
       lidx = midx + 1
   }
   if (ridx < 0) ridx = 0
-  if (gotoDialogInProgress) return
+  if (gotoDialogInProgress || inPauseAfterDialog || $('video')[0].paused) return
   gotoDialogNoVidSeek(ridx, false, true)
 }
 
@@ -415,11 +542,11 @@ function flipPause() {
 }
 
 function playedVideo() {
-  now.serverlog('playing: currentIdx=' )
+  // now.serverlog('playing: currentIdx=' )
 }
 
 function pausedVideo() {
-  now.serverlog('paused: currentIdx=' )
+  // now.serverlog('paused: currentIdx=' )
 }
 
 function videoPlaying() {
@@ -432,36 +559,61 @@ function checkKey(x) {
   var vid = $('video')[0]
   console.log(x.keyCode)
   if (x.keyCode == 32) { // space
-    if (vid.paused) {
-      vid.play()
-      playedVideo()
+    if(autoShowTranslation) {
+      autoShowTranslation = false
+      clearHoverTrans()
     } else {
-      vid.pause()
-      pausedVideo()
+      autoShowTranslation = true
+      showFullTranslation()
     }
+    //if (vid.paused) {
+    //  vid.play()
+    //  playedVideo()
+    //} else {
+    //  vid.pause()
+    //  pausedVideo()
+    //}
     x.preventDefault()
     return false
+  } else if (x.keyCode == 13) { // enter
+  	gotoDialogPauseAfterDialog(getCurrentDialogNum())
   } else if (x.keyCode == 37) { // left arrow
-    if (x.ctrlKey) {
-      prevButtonPressed()
-    } else {
-      vid.currentTime -= 5
-    }
+    //if (x.ctrlKey) {
+      // prevButtonPressed()
+    //} else {
+      // vid.currentTime -= 5
+    // }
+    leftKeyPressed()
     x.preventDefault()
     return false
   } else if (x.keyCode == 39) { // right arrow
-    if (x.ctrlKey) {
-      nextButtonPressed()
-    } else {
-      vid.currentTime += 5
-    }
+    //if (x.ctrlKey) {
+     // nextButtonPressed()
+    //} else {
+     // vid.currentTime += 5
+    //}
+    rightKeyPressed()
     x.preventDefault()
     return false
   } else if (x.keyCode == 38 || x.keyCode == 33) { // up arrow, page up
-    prevButtonPressed()
+    if (checkIfCurrentWordStillHighlighted() == true) {
+      showFullTranslation()
+    } else if (x.ctrlKey) {
+      prevButtonPressed()
+    } else {
+      prevButtonPressedPauseAfterDialog()
+    }
     x.preventDefault()
   } else if (x.keyCode == 40 || x.keyCode == 34) { // down arrow, page down
-    nextButtonPressed()
+    if (checkIfCurrentWordStillHighlighted() == true) {
+      if (autoShowTranslation = false) {
+        showFullTranslation()
+      }
+    } else if (x.ctrlKey) {
+      nextButtonPressed()
+    } else {
+      nextButtonPressedPauseAfterDialog()
+    }
     x.preventDefault()
   }
 }
@@ -536,9 +688,9 @@ callOnceElementAvailable('#bottomFrame', function() {
   $('#bottomFrame').scroll(onScroll)
 })
 
-$(document)[0].addEventListener('contextmenu', function(event) {
-  event.preventDefault()
-})
+// $(document)[0].addEventListener('contextmenu', function(event) {
+//   event.preventDefault()
+// })
 
 $(window).bind('hashchange',function(event){
     var anchorhash = location.hash.replace('#', '');
@@ -575,16 +727,17 @@ function startPlayback() {
   if (uploadedSRTorASUBextension.toLowerCase() === "asub") {
   //  setNewSubtitleList(parseASUBfile(subtitleText))
     var asubLoadedArray = new parseASUBfile(subtitleText);
-    setNewSubtitleList(asubLoadedArray.timesAndSubtitles)
+    setNewSubtitleList(asubLoadedArray.asubTimesAndSubtitles)
+    initializeNativeSubtitleText(nativeSubtitleText)
   } else {
-    now.initializeSubtitleText(subtitleText, subLanguage, targetLanguage, function() {
-      now.getFullAnnotatedSub(setNewSubtitleList)
-      now.initializeNativeSubtitleText(nativeSubtitleText)
-    })
+    //now.initializeSubtitleText(subtitleText, subLanguage, targetLanguage, function() {
+    //  now.getFullAnnotatedSub(setNewSubtitleList)
+    //  now.initializeNativeSubtitleText(nativeSubtitleText)
+    //})
   }
   var subpixSource = getUrlParameters()['subpix']
   if (subpixSource != null) {
-    now.initializeSubPix(subpixSource)
+  //  now.initializeSubPix(subpixSource)
   }
 }
 
@@ -594,11 +747,11 @@ function startPlayback() {
 
 // parseASUBfile = (function() {
   function parseASUBfile(subtitleText) {  // copied (but modified) from SubtitleRead() (inside subtitleread.js used on node.js server side)
-    var currentSub, subIndex, awaitingTime, endTime, lastStartTime, line, subContents, startTime, timeToSubtitle, timesAndSubtitles, triplet, _i, _j, _len, _len1, _ref, _ref1;
+    var currentSub, subIndex, awaitingTime, endTime, lastStartTime, line, subContents, startTime, timeToSubtitle, asubTimesAndSubtitles, triplet, _i, _j, _len, _len1, _ref, _ref1;
     this.subtitleText = subtitleText;
     lastStartTime = 0;
     timeToSubtitle = {};
-    timesAndSubtitles = [];
+    asubTimesAndSubtitles = [];
     awaitingTime = true;
     startTime = 0.0;
     endTime = 0.0;
@@ -613,8 +766,8 @@ function startPlayback() {
       }
       if ((line === '') || (_i === _ref.length)) {
         if ((subContents !== '') & (awaitingTime === false)) {
-          timesAndSubtitles.push([startTime, endTime, subContents]);
-        //  timesAndSubtitles[subIndex].push(subContents.split('\n'))
+          asubTimesAndSubtitles.push([startTime, endTime, subContents]);
+        //  asubTimesAndSubtitles[subIndex].push(subContents.split('\n'))
         }
         if (awaitingTime === false) {subIndex++};
         awaitingTime = true;
@@ -636,7 +789,8 @@ function startPlayback() {
         subContents.push($.map(workingLine, $.trim)); // trim the three elements of workingLine, and add to subContents.
       }
     }
-    this.timesAndSubtitles = timesAndSubtitles;
+    this.asubTimesAndSubtitles = asubTimesAndSubtitles;
+    window.asubTimesAndSubtitles = this.asubTimesAndSubtitles
     this.lastStartTime = lastStartTime;
   }
 // })();
@@ -650,6 +804,93 @@ toDeciSeconds = function(time) {
   sec = parseFloat(sec);
   return Math.round((hour * 3600 + min * 60 + sec) * 10);
 };
+
+SubtitleRead = (function() {
+  function SubtitleRead(subtitleText) {
+    var awaitingTime, endTime, lastStartTime, line, lineContents, startTime, timeToSubtitle, timesAndSubtitles, triplet, _i, _j, _len, _len1, _ref, _ref1;
+    this.subtitleText = subtitleText;
+    lastStartTime = 0;
+    timeToSubtitle = {};
+    timesAndSubtitles = [];
+    awaitingTime = true;
+    startTime = 0.0;
+    endTime = 0.0;
+    lineContents = '';
+    _ref = subtitleText.split('\n');
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      line = _ref[_i];
+      line = line.trim();
+      if (line === '') {
+        if (lineContents !== '') {
+          timesAndSubtitles.push([startTime, endTime, lineContents]);
+        }
+        awaitingTime = true;
+        lineContents = '';
+      } else if (awaitingTime) {
+        if (line.indexOf(' --> ') !== -1) {
+          awaitingTime = false;
+          _ref1 = line.split(' --> '), startTime = _ref1[0], endTime = _ref1[1];
+          startTime = toDeciSeconds(startTime);
+          endTime = toDeciSeconds(endTime);
+          awaitingTime = false;
+        }
+      } else {
+        lineContents = (lineContents + ' ' + line).trim();
+      }
+    }
+    if (lineContents !== '') {
+      timesAndSubtitles.push([startTime, endTime, lineContents]);
+    }
+    for (_j = 0, _len1 = timesAndSubtitles.length; _j < _len1; _j++) {
+      triplet = timesAndSubtitles[_j];
+      startTime = triplet[0], endTime = triplet[1], lineContents = triplet[2];
+      if (startTime > lastStartTime) {
+        lastStartTime = startTime;
+      }
+      while (startTime < endTime + 50) {
+        timeToSubtitle[startTime] = lineContents;
+        ++startTime;
+      }
+    }
+    this.timeToSubtitle = timeToSubtitle;
+    this.timesAndSubtitles = timesAndSubtitles;
+    this.lastStartTime = lastStartTime;
+  }
+  SubtitleRead.prototype.getSubtitleIndexFromTime = function(deciSec) {
+    var ctime, lidx, midx, ridx;
+    lidx = 0;
+    ridx = window.asubTimesAndSubtitles.length - 1;
+    while (lidx < ridx + 1) {
+      midx = Math.floor((lidx + ridx) / 2);
+      ctime = window.asubTimesAndSubtitles[midx][0];
+      if (ctime > deciSec) {
+        ridx = midx - 1;
+      } else {
+        lidx = midx + 1;
+      }
+    }
+    if (ridx < 0) {
+      ridx = 0;
+    }
+    return ridx;
+  };
+  SubtitleRead.prototype.getTimesAndSubtitles = function() {
+    return this.timesAndSubtitles;
+  };
+  SubtitleRead.prototype.subtitleAtTime = function(deciSec) {
+    var retv;
+    retv = this.timeToSubtitle[deciSec];
+    if (retv) {
+      return retv;
+    } else {
+      return '';
+    }
+  };
+  SubtitleRead.prototype.subtitleAtTimeAsync = function(deciSec, callback) {
+    return callback(this.subtitleAtTime(deciSec));
+  };
+  return SubtitleRead;
+})();
 
 function isLocalFile() {
   return ($('#urlOrFile').val() == 'file')
@@ -676,10 +917,10 @@ function loadVideo(videourl, suburl) {
   $('#subtitleInput').val('')
   textChanged()
   $('#subtitleInput').val('Loading subtitles from ' + suburl)
-  now.downloadSubtitleText(suburl, function(subText) {
-    $('#subtitleInput').val(subText)
-    textChanged()
-  })
+  //now.downloadSubtitleText(suburl, function(subText) {
+  //  $('#subtitleInput').val(subText)
+  //  textChanged()
+  //})
 }
 
 function urlOrFileChanged() {
@@ -751,7 +992,7 @@ map[key] = value;
 return map; 
 }
 
-now.clientlog = function(text) {
-  console.log(text)
-}
+//now.clientlog = function(text) {
+//  console.log(text)
+//}
 
