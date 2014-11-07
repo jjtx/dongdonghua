@@ -39,36 +39,18 @@ app.configure(function(){
   app.use(express.static(__dirname + '/static'));
 });
 
-/*
-app.get('/', function (req, res) {
-  res.render('index'); // Where index.ejs is your ejs template
-});
-*/
-
 nowjs.on("connect", function() {
   aux.initializeUser(this)
 })
 
-/*
-everyone.now.getSubText = function(recSubCallback) {
-  subtext = fs.readFileSync('static/shaolin.srt', 'utf8')
-  recSubCallback(subtext)
-}
+everyone.on("connect", function(){
+  console.log("Joined: " + this.now.name);
+});
 
-everyone.now.getDictText = function(recDictCallback) {
-  dictText = fs.readFileSync('static/cedict_1_0_ts_utf-8_mdbg.txt', 'utf8')
-  recDictCallback(dictText)
-}
-
-everyone.now.getPinyin = function(sentence, recPinyinCallback) {
-  recPinyinCallback(cdict.getPinyin(sentence))
-}
-
-everyone.now.getEnglish = function(word, recPinyinCallback) {
-  recPinyinCallback(cdict.getEnglishForWord(word))
-}
-*/
+everyone.on("disconnect", function(){
+  console.log("Left: " + this.now.name);
+});
 
 console.log('express server started')
-//console.log("Express server listening on port %d in %s mode", httpserver.address().port, app.settings.env);
 
+//console.log("Express server listening on port %d in %s mode", httpserver.address().port, app.settings.env);

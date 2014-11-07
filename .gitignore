@@ -4,10 +4,9 @@
 *.webm
 *.srt
 *~
-aux.js
-static/pinyinutils.js
-static/client.js
+client_id_and_secret.txt
 static/cedict_full.txt
 static/edict2_full.txt
 static/examplevids.js
-
+node_modules/*
+static/FileSaver.js-master/*

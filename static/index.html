@@ -19,8 +19,7 @@
 <script type="text/javascript" src="modernizr.js"></script>
 <script type="text/javascript" src="client.js"></script>
 <script type="text/javascript" src="index.js"></script>
-<script type="text/javascript" src="examplevids.js"></script>
-<script type="text/javascript" src="scrollutil.js"></script>
+<script type="text/javascript" src="FileSaver.js"></script>
 <script type="text/javascript">
 
 $(document).ready(function() {
@@ -86,7 +85,6 @@ if (urlParams['video'] != null && (urlParams['sub'] != null || urlParams['subpix
     $('#inputRegion').hide()
     $('#viewingRegion').show()
     console.log(subSource)
-    //now.initializeSubtitle(subSource, subLanguage)
     now.initializeSubtitle(subSource, subLanguage, targetLanguage, function() {
       now.getFullAnnotatedSub(function(sublist) {
         setNewSubtitleList(sublist)
@@ -106,7 +104,8 @@ if (urlParams['video'] != null && (urlParams['sub'] != null || urlParams['subpix
   callOnceMethodAvailable('initializeSubPix', function() {
     $('#inputRegion').hide()
     $('#viewingRegion').show()
-    console.log(subPixSource)
+    
+    (subPixSource)
     now.initializeSubPix(subPixSource)
   })
 }
@@ -132,8 +131,8 @@ Video (<span id="supportedVideoFormats">Your browser doesn't support video, use 
   <option value="file" >Local File</option>
   <option value="url" >URL</option>
 </select>: <input type="file" accept="video/*" id="videoInputFile" style="width: 500px" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()" /><input style="display: none; width: 500px" type="text" id="videoInputURL" style=" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()" /><br />
-Chinese Subtitle (<a href="http://en.wikipedia.org/wiki/SubRip#SubRip_text_file_format">SRT</a> format):
-<input type="file" accept=".srt" id="srtInputFile" style="width: 500px" onkeypress="subtitleUploaded()" onchange="subtitleUploaded()" onkeyup="subtitleUploaded()" />
+Chinese Subtitle (<a href="http://en.wikipedia.org/wiki/SubRip#SubRip_text_file_format">SRT</a> or ASUB format):
+<input type="file" accept=".srt,.asub" id="srtInputFile" style="width: 500px" onkeypress="subtitleUploaded()" onchange="subtitleUploaded()" onkeyup="subtitleUploaded()" />
 
 <br/>
 
@@ -143,22 +142,24 @@ Optional English Subtitle (<a href="http://en.wikipedia.org/wiki/SubRip#SubRip_t
 
 <br/>
 
-<textarea id="nativeSubtitleInput" style="width: 100%; height: 100px" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()"></textarea><br />
+<textarea id="nativeSubtitleInput" style="width: 100%; height: 100px" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()"></textarea><br /><br />
+
+<input type="checkbox" id="asubDLCheckbox">  Save ASUB file to local disk<br/><br/>
 
 <button onclick="startPlayback()" disabled="true" id="startPlaybackButton">Start Video</button>
 
 </div>
 
 <div id='viewingRegion' style='display:none;'>
-<div id='fixedVideoFrame' style="position: absolute; top:0; left:0; width: 100%; height: 300px; overflow: hidden;">
+<div id='fixedVideoFrame' style="position: absolute; top:0; left:0; width: 100%; height: 500px; overflow: hidden;">
 <div id="errorRegion" style="background-color: yellow" align="center"></div>
 <div id="whiteRegion" style="background-color: white; width: 100%; position: fixed; top: 0px;" align="center"></div>
-<div align="center"><video style="position: fixed; left: 0px; top: 0px; height: 300px;" controls="controls" id="videoControls" ontimeupdate="onTimeChanged(this)" onerror="onVideoError(this)" onplay="videoPlaying(this)" onpause="videoPaused(this)" onfocus="this.blur()" onloadedmetadata="videoLoaded()">
+<div align="center"><video style="position: fixed; left: 0px; top: 0px; height: 500px;" id="videoControls" ontimeupdate="onTimeChanged(this)" onerror="onVideoError(this)" onplay="videoPlaying(this)" onpause="videoPaused(this)" onfocus="this.blur()" onloadedmetadata="videoLoaded()">
 </video></div>
 </div>
 
 <div id="bottomOfScreen" style="position: fixed; top: 100%; left: 100%"></div>
-<div id='bottomFrame' style="position: fixed; top: 300px; left: 0; bottom: 0; width: 100%; overflow: auto;">
+<div id='bottomFrame' style="position: fixed; top: 500px; left: 0; bottom: 0; width: 100%; overflow: auto;">
 <div id="translation" isFullTranslation='false' style="font-size: medium; display: inline-block; white-space: nowrap; position: relative"></div>
 <div id='subpRegion' align="center"><img id='subpDisplay'></img></div>
 <div align="center">

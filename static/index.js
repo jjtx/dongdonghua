@@ -1,5 +1,4 @@
 sub = {}
-//cdict = {}
 
 audioQueue = []
 
@@ -7,25 +6,13 @@ subLanguage = 'zh'
 targetLanguage = 'vi'
 
 function prevButtonPressed() {
-  //var vid = $('video')[0]
-  //vid.pause()
   var pdn = getCurrentDialogNum()
   gotoDialog(pdn - 1)
-  //curtime = Math.round(vid.currentTime*10)
-  //now.getPrevDialogStartTime(curtime, function(time) {
-  //  vid.currentTime = time/10
-  //})
 }
 
 function nextButtonPressed() {
-  //var vid = $('video')[0]
-  //vid.pause()
   var pdn = getCurrentDialogNum()
   gotoDialog(pdn + 1)
-  //curtime = Math.round(vid.currentTime*10)
-  //now.getNextDialogStartTime(curtime, function(time) {
-  //  vid.currentTime = time/10
-  //})
 }
 
 function clearHoverTrans() {
@@ -41,9 +28,7 @@ function placeTranslationText(wordid) {
   var height = chineseChar.height()
   $('#translation').show()
   $('#translation').css('position', 'absolute')
-  $('#translation').css({'left': (pos.left), 'top': (pos.top + 10 - 300 + $('#bottomFrame').scrollTop() + height), })
-  //$('#translationTriangle').appendTo(chineseChar)
-  //$('#translationTriangle').css({'left': (pos.left) + 'px', 'top': (pos.top + height) + 'px', 'position': 'absolute', })//.show()
+  $('#translation').css({'left': (pos.left), 'top': (pos.top + 10 - 500 + $('#bottomFrame').scrollTop() + height), })
 }
 
 function onWordLeave(wordid) {
@@ -60,9 +45,6 @@ function onWordLeave(wordid) {
 }
 
 function onWordHover(wordid) {
-  //var vid = $('video')[0]
-  //vid.pause()
-  //console.log(wordid)
   clearHoverTrans()
   placeTranslationText(wordid)
 
@@ -73,36 +55,17 @@ function onWordHover(wordid) {
 
   var hovertext = $('#WS'+ wordid).attr('hovertext')
 
-  //$('.'+ wordid).css()
   if (subLanguage == 'en') {
-    //$('#translation').html(hovertext)
     $('#translation').text(hovertext)
   } else {
     definitions = hovertext.split('/')
     firstDef = definitions[0]
     nextDefs = ' <span id="transAltDefs" style="color: grey">' + definitions.slice(1).join('; ') + '</span>'
-    //if (hovertext.indexOf(';') != -1) {
-    //  hovertext = hovertext.slice(0, hovertext.indexOf('/'))
-    //}
     $('#translation').html(firstDef + nextDefs)
     $('#translation').attr('isFullTranslation', 'false')
   }
   now.serverlog('entered: wordid=' + wordid + ' word=' + $('#WS' + wordid).text())
 }
-
-/*
-function setHoverTrans(wordid, hovertext) {
-$('.'+ wordid).hover(function() {
-  onWordHover(wordid)
-})
-*/
-/*
-$('.'+ wordid).mouseout(function() {
-  $($('.'+ wordid)).css('background-color', '')
-  $('#translation').text('')
-  $('#translationTriangle').hide()
-})
-*/
 
 function nextAudioItem() {
   console.log(audioQueue)
@@ -144,13 +107,6 @@ $('.'+ wordid).click(function() {
 })
 }
 
-/*
-function getTransAndSetHover(word) {
-  now.getEnglish(word, function(english) {
-    setHoverTrans(word, english)
-  })
-}
-*/
 
 function setNewSubPix(subpixPath) {
 if (subpixPath == '')
@@ -174,14 +130,11 @@ function wordClicked(dialogNum) {
 }
 
 function gotoDialog(dialogNum, dontanimate) {
-  //skipCurrentTimeChanged = true
   gotoDialogNoVidSeek(dialogNum, dontanimate)
   $('video')[0].currentTime = dialogStartTimesDeciSeconds[dialogNum] / 10
-  //setTimeout(function() {skipCurrentTimeChanged = false}, 100)
 }
 
 gotoDialogInProgress = false
-//skipCurrentTimeChanged = false
 
 function gotoDialogNoVidSeek(dialogNum, dontanimate, automatic) {
   var pdn = getCurrentDialogNum()
@@ -190,7 +143,6 @@ function gotoDialogNoVidSeek(dialogNum, dontanimate, automatic) {
   gotoDialogInProgress = true
   $('html, body').stop(true, true)
   var realPrevDialogNum = pdn
-  //prevDialogNum = dialogNum
   
   clearHoverTrans()
   
@@ -210,69 +162,16 @@ function gotoDialogNoVidSeek(dialogNum, dontanimate, automatic) {
   $('.tb' + dialogNum).css('font-size', '48px')
   $('.tb' + dialogNum).addClass('tbactive')
   $('.tb' + dialogNum).show()
-  //$('#dialogStart' + prevDialogNum).css('background-color', 'black')
-  //$('#dialogStartPY' + prevDialogNum).css('background-color', 'black')
-  //$('#dialogStart' + dialogNum).css('background-color', 'darkgreen')
-  //$('#dialogStartPY' + dialogNum).css('background-color', 'darkgreen')
-  /*
-  var videoHeight = $('video')[0].videoHeight
-  var videoBottom = $('video').offset().top + videoHeight
-  var windowBottom = $('#bottomOfScreen').offset().top
-  var offset = $('#whitespaceS' + dialogNum).offset()
-  */
-  //var width = $('#dialogEndSpaceWS' + dialogNum).offset().left - $('#dialogStartSpaceWS' + dialogNum).offset().left// - $('#dialogStartSpaceWS' + dialogNum).width()
-  //var videoOffset = $('video').offset()
-  //var videoWidth = $('video')[0].videoWidth
-  //offset.top = videoOffset.top
-  //offset.left -= Math.round(videoWidth/4)
-  
-  //offset.left -= Math.round(videoWidth/2)
-  //offset.left += Math.round(width/2)
-  //offset.left = Math.max(0, offset.left)
-  
-  //$('video').offset(offset)
-  
-  //window.scroll($('video').offset().left - Math.round(videoWidth/2))
-  //window.scroll(offset.left - Math.round($(window).width()/2) + Math.round(width/2))]
+
   var oldOffset = $('#bottomFrame').scrollTop()
   var newOffset = $('#whitespaceS' + dialogNum).offset().top - $('#bottomFrame').offset().top + $('#bottomFrame').scrollTop() - $('#bottomFrame').height()/2 - $('.tb' + dialogNum).height()/2 - $('#whitespaceS' + dialogNum).height()/2
   if (Math.abs(newOffset - oldOffset) > $(window).width()) {
-    //$('html, body').scrollTop(newOffset)
     $('#bottomFrame').animate({scrollTop: newOffset}, 30)
     setTimeout(function() {gotoDialogInProgress = false}, 130)
   } else {
     $('#bottomFrame').animate({scrollTop: newOffset}, 100)
     setTimeout(function() {gotoDialogInProgress = false}, 200)
   }
-  /*
-  var oldOffset = $('#bottomFrame').scrollTop()
-  var newOffset = offset.top //- 48 - videoHeight - (windowBottom - videoBottom)/2
-  if (false) {
-    $('html, body').scrollTop(newOffset)
-    //gotoDialogInProgress = false
-    setTimeout(function() {gotoDialogInProgress = false}, 50)
-  } else if (Math.abs(newOffset - oldOffset) > $(window).width()) {
-    //$('html, body').scrollTop(newOffset)
-    $('html, body').animate({scrollTop: newOffset}, 30)
-    setTimeout(function() {gotoDialogInProgress = false}, 130)
-  } else {
-    $('html, body').animate({scrollTop: newOffset}, 100)
-    setTimeout(function() {gotoDialogInProgress = false}, 200)
-  }
-  */
-  // - Math.round($(window).width()/2 + width/2)
-  
-  
-
-  //var oldOffset = $('html, body').scrollLeft()
-  //var newOffset = offset.left - Math.round($(window).width()/2) + Math.round(width/2) + Math.round($('#dialogStartSpaceWS' + dialogNum).width()/2)
-  //if (Math.abs(newOffset - oldOffset) > $(window).width()) {
-  //  $('html, body').animate({scrollLeft: newOffset}, 100)
-  //} else {
-  //  $('html, body').animate({scrollLeft: newOffset}, 300)
-  //}
-  //$('body').animate({scrollLeft: Math.round($('#dialogStartSpaceWS' + dialogNum).scrollLeft())}, 10)
-
   
   now.serverlog('gotodialog: dialogNum=' + dialogNum + ' prevDialogNum=' + realPrevDialogNum + ' automatic=' + automatic)
   if (autoShowTranslation) {
@@ -281,27 +180,6 @@ function gotoDialogNoVidSeek(dialogNum, dontanimate, automatic) {
 }
 
 dialogsSetUp = {}
-
-/*
-function setupHoverForDialog(dialogNum) {
-  if (dialogsSetUp[dialogNum]) return
-  dialogsSetUp[dialogNum] = true
-  var annotatedWordList = annotatedWordListListG[dialogNum][2]
-  for (var i = 0; i < annotatedWordList.length; ++i) {
-    var word = annotatedWordList[i][0]
-    var pinyin = annotatedWordList[i][1]
-    var english = annotatedWordList[i][2]
-    //var randid = wordToId[word]
-    var randid = 'wid_q_' + dialogNum + '_i_' + i
-    setHoverTrans(randid, english)
-    if (subLanguage == 'en') {
-      //setClickPronounceEN(randid, word)
-    } else if (subLanguage == 'zh') {
-      //setClickPronounceZH(randid, pinyin)
-    }
-  }
-}
-*/
 
 function translateButtonPressed(n) {
   if ($('#translation').attr('isFullTranslation') == 'true' && $('video')[0].paused) {
@@ -319,7 +197,6 @@ function showFullTranslation(n) {
   firstWordId = $('.tb' + n).attr('firstWordId')
   console.log(sentence)
   clearHoverTrans()
-  //var currentTimeDeciSecs = Math.round($('video')[0].currentTime*10)
   var currentTimeDeciSecs = $('.tb' + n).attr('startTimeDeciSeconds')
   now.getNativeSubAtTime(currentTimeDeciSecs, function(translation) {
     if ($('.currentlyHighlighted').length != 0) return
@@ -333,17 +210,6 @@ function showFullTranslation(n) {
     $('#translation').show()
     now.serverlog('translation: firstWordId=' + firstWordId + ' translation=' + translation)
   })
-  /*
-  now.getTranslations(sentence, function(translation) {
-    console.log(translation[0].TranslatedText)
-    $('#translation').text(translation[0].TranslatedText)
-    placeTranslationText(firstWordId)
-    var offset = $('#translation').offset()
-    offset.left = $(window).width()/2 - $('#translation').width()/2
-    $('#translation').offset(offset)
-    $('#translation').show()
-  })
-  */
 }
 
 function setNewSubtitles(annotatedWordList) {
@@ -353,6 +219,9 @@ function setNewSubtitles(annotatedWordList) {
 annotatedWordListListG = []
 
 function setNewSubtitleList(annotatedWordListListOrig) {
+  if (document.getElementById("asubDLCheckbox").checked === true) {
+    downloadASUBfile(annotatedWordListListOrig);
+  }
   var annotatedWordListList = []
   for (var q = 0; q < annotatedWordListListOrig.length; ++q) {
     if (annotatedWordListListOrig[q][2].length > 0) {
@@ -362,10 +231,31 @@ function setNewSubtitleList(annotatedWordListListOrig) {
   setNewSubtitleListReal(annotatedWordListList);
 }
 
+function downloadASUBfile(annotatedWordListListOrigDL) {
+  var asubDLstring ="";
+  var subtitleInputTemp = $('#subtitleInput').val().trim();
+  var originalSubtitleInputForTimes = subtitleInputTemp.split("\n\n");
+  while (originalSubtitleInputForTimes.indexOf("") > -1) {  // remove all null elements (this happens if there are more than two "\n" between subtitles)
+    originalSubtitleInputForTimes.splice(originalSubtitleInputForTimes.indexOf(""),1);
+  }
+  for (var q = 0; q < (annotatedWordListListOrigDL.length); ++q) {
+    console.log('q = ' + q);
+    var newlinePositionAfterTimes = (originalSubtitleInputForTimes[q].lastIndexOf(" --> ")+16);
+    asubDLstring += (originalSubtitleInputForTimes[q].slice(0,newlinePositionAfterTimes+1) + "\n");
+    for (var r = 0; r < annotatedWordListListOrigDL[q][2].length; ++r) {
+      asubDLstring += annotatedWordListListOrigDL[q][2][r].join(" | ");
+      asubDLstring += "\n";
+    }
+    asubDLstring += "\n";
+  }
+  var uploadedSrtFilename = document.getElementById("srtInputFile").value;
+  var filenameToSave = uploadedSrtFilename.slice(uploadedSrtFilename.lastIndexOf("\\") + 1, uploadedSrtFilename.lastIndexOf(".") - 1);
+  var blob = new Blob([asubDLstring], {type: "text/plain;charset=utf-8"});
+  saveAs(blob, filenameToSave + ".asub");  
+}
+
 function setNewSubtitleListReal(annotatedWordListList) {
 annotatedWordListListG = annotatedWordListList
-//console.log(annotatedWordList.toString())
-//if (annotatedWordList.length == 0) return
 $('#translationTriangle').hide()
 $('#translation').text('')
 $('#translation').attr('isFullTranslation', 'false')
@@ -374,11 +264,6 @@ var nhtml = []
 dialogStartTimesDeciSeconds = []
 
 var wordToId = {}
-
-//$('video').css('left', Math.round($(window).width()/2 - $('video')[0].videoWidth/2).toString())
-
-//pinyinRow.push('<td style="display:-moz-inline-box;display:inline-block;width:' + ($('video').offset().left + Math.round($('video')[0].videoWidth/2))+ 'px;"></td>')
-//wordRow.push('<td style="display:-moz-inline-box;display:inline-block;width:' + ($('video').offset().left + Math.round($('video')[0].videoWidth/2)) + 'px;"></td>')
 
 for (var q = 0; q < annotatedWordListList.length; ++q) {
 var startTimeDeciSeconds = annotatedWordListList[q][0]
@@ -392,11 +277,6 @@ nhtml.push('<table border="0" cellspacing="0">')
 var pinyinRow = []
 var wordRow = []
 var whitespaceRow = []
-
-//console.log(annotatedWordList)
-
-//pinyinRow.push('<td id="dialogStartSpacePYS' + q + '" style="background-color: white; color: black; text-align: center; font-size: 18px" class="spacingPYS" onclick="gotoDialog(' + q + ')"></td>')
-//wordRow.push('<td id="dialogStartSpaceWS' + q + '" style="background-color: white; color: black; text-align: center; font-size: 32px" class="spacingWS" onclick="gotoDialog(' + q + ')">　</td>')
 
 var allWords = []
 for (var i = 0; i < annotatedWordList.length; ++i) {
@@ -415,7 +295,6 @@ else english = escapeHtmlQuotes(english)
 
 if (wordToId[word] == null)
   wordToId[word] = Math.round(Math.random() * 1000000)
-//var randid = wordToId[word]
 var randid = 'wid_q_' + q + '_i_' + i
 if (i == 0) firstWordId = randid;
 
@@ -446,9 +325,6 @@ whitespaceRow.push('<td id="whitespaceS' + q + '" style="font-size: 32px">　</t
 wordRow.push('<td id="translate"' + q + '" style="font-size: 32px">　</td>')
 wordRow.push('<td><button id="translate"' + q + '" style="font-size: 32px; display: none; white-space: nowrap" dialogNum="' + q + '" class="translateButton tb' + q + '" startTimeDeciSeconds="' + startTimeDeciSeconds + '" endTimeDeciSeconds="' + endTimeDeciSeconds + '" currentSentence="' + currentSentence + '" firstWordId="' + firstWordId + '" onclick="translateButtonPressed(' + q + ')">translate</button></td>')
 
-//pinyinRow.push('<td id="dialogEndSpacePYS' + q + '" style="background-color: white; color: black; text-align: center; font-size: 18px" class="spacingPYS" onclick="gotoDialog(' + q + ')"></td>')
-//wordRow.push('<td id="dialogEndSpaceWS' + q + '" style="background-color: white; color: black; text-align: center; font-size: 32px" class="spacingWS" onclick="gotoDialog(' + q + ')">　</td>')
-
 nhtml.push('<col>' + pinyinRow.join('') + '</col>')
 nhtml.push('<col>' + wordRow.join('') + '</col>')
 nhtml.push('<col>' + whitespaceRow.join('') + '</col>')
@@ -459,40 +335,12 @@ nhtml.push('</table>')
 
 $('#caption').html(nhtml.join(''))
 
-/*
-for (var q = 0; q < annotatedWordListList.length; ++q) {
-var annotatedWordList = annotatedWordListList[q][2]
-for (var i = 0; i < annotatedWordList.length; ++i) {
-  var word = annotatedWordList[i][0]
-  var pinyin = annotatedWordList[i][1]
-  var english = annotatedWordList[i][2]
-  //var randid = wordToId[word]
-  var randid = 'wid_q_' + q + '_i_' + i
-  //setHoverTrans(randid, english)
-  if (subLanguage == 'en') {
-    setClickPronounceEN(randid, word)
-  } else if (subLanguage == 'zh') {
-    //setClickPronounceZH(randid, pinyin)
-  }
-}
-}
-*/
-
-//gotoDialogNoVidSeek(0, false, true)
-//$('video')[0].play()
 }
 
 function videoLoaded() {
   var videoWidth = $('video')[0].videoWidth
   $('video').css('left', '50%')
-  $('video').css('margin-left', - Math.round(videoWidth/2))
-  //var videoHeight = $('video')[0].videoHeight
-  //$('#videoSpacing').css('margin-top', ($('video').offset().top + videoHeight))
-  
-  //$('#whiteRegion').css('height', videoHeight)
-  //var videoOffset = $('video').offset()
-  //videoOffset.left = Math.round($(window).width()/2 - $('video')[0].videoWidth/2)
-  //$('video').offset(videoOffset)
+  $('video').css('margin-left', - Math.round(videoWidth/3.45))
 }
 
 function dialogEndTimeSec(dialogNum) {
@@ -534,35 +382,7 @@ function onTimeChanged(s) {
   if (ridx < 0) ridx = 0
   if (gotoDialogInProgress) return
   gotoDialogNoVidSeek(ridx, false, true)
-//now.getAnnotatedSubAtTime(Math.round(s.currentTime*10), setNewSubtitles)
-//now.getSubPixAtTime(Math.round(s.currentTime*10), setNewSubPix)
 }
-
-/*
-var curSub = sub.subtitleAtTime(Math.round(currentTime))
-var wordsInSub = curSub.split('')
-
-$('#translation').text('')
-now.getPinyin(curSub, function(pinyin) {
-if (pinyin == '') $('#pinyin').text('')
-else $('#pinyin').text(toneNumberToMark(pinyin).toLowerCase())
-})
-
-
-for (var i = 0; i < wordsInSub.length; ++i) {
-var word = wordsInSub[i]
-nhtml.push('<span class="hoverable" id="' + word + '">' + word + '</span>')
-}
-
-$('#caption').html(nhtml.join(''))
-
-for (var i = 0; i < wordsInSub.length; ++i) {
-var word = wordsInSub[i]
-getTransAndSetHover(word)
-}
-
-}
-*/
 
 function relMouseCoords(event, htmlelem){
     var totalOffsetX = 0;
@@ -582,15 +402,6 @@ function relMouseCoords(event, htmlelem){
 
     return {x:canvasX, y:canvasY}
 }
-
-/*
-$('body').mousemove(function(x) {
-var vid = $('video')[0]
-var mouseCoords = relMouseCoords(x, vid)
-if (mouseCoords.y < $('video').height() && mouseCoords.x < $('video').width()) return
-vid.pause()
-})
-*/
 
 function flipPause() {
   var vid = $('video')[0]
@@ -612,65 +423,10 @@ function pausedVideo() {
 }
 
 function videoPlaying() {
-//$('#playPauseButton').text('Pause (Space)')
-//$('#prevLineButton').show()
-//$('#nextLineButton').show()
-//$('video').width($('video')[0].videoWidth)
-//$('video').height($('video')[0].videoHeight)
 }
 
 function videoPaused() {
-//$('#playPauseButton').text('Play (Space)')
-//$('#prevLineButton').show()
-//$('#nextLineButton').show()
 }
-
-/*
-function videoClicked() {
-  var vid = $('video')[0]
-  if (vid.paused)
-    vid.play()
-  else
-    vid.pause()
-}
-*/
-
-
-
-/*
-$(document).click(function(x) {
-var vid = $('video')[0]
-var videoLeft = $('video').offset().left
-var videoTop = $('video').offset().top
-var videoWidth = $('video')[0].videoWidth
-var videoHeight = $('video')[0].videoHeight
-if (x.pageX < videoLeft || x.pageX > videoLeft + videoWidth) return true
-if (x.pageY < videoTop || x.pageY > videoTop + videoHeight - 40) return true
-//var mouseCoords = relMouseCoords(x, vid)
-//if (mouseCoords.y > $('video')[0].videoHeight - 30 || mouseCoords.x > $('video')[0].videoWidth) return true
-if (vid.paused) {
-  vid.play()
-  playedVideo()
-} else {
-  vid.pause()
-  pausedVideo()
-}
-return false
-})
-*/
-
-/*
-$(document).click(function(x) {
-var vid = $('video')[0]
-var mouseCoords = relMouseCoords(x, vid)
-if (mouseCoords.y > $('video')[0].videoHeight - 30 || mouseCoords.x > $('video')[0].videoWidth) return true
-if (vid.paused)
-  vid.play()
-else
-  vid.pause()
-return false
-})
-*/
 
 function checkKey(x) {
   var vid = $('video')[0]
@@ -724,7 +480,6 @@ function mouseWheelMove(event, delta) {
     return false
   }
   mouseWheelMoveInProgress = true
-  //console.log('mousewheel move - prevDialogNum: ' + prevDialogNum)
   var currentDialogNum = getCurrentDialogNum()
   if (delta > 0) {
     gotoDialog(currentDialogNum - 1)
@@ -737,9 +492,6 @@ function mouseWheelMove(event, delta) {
 
 $(document).mousewheel(mouseWheelMove)
 
-//pausedFromLeftButtonHold = false
-
-
 function mouseDown(event) {
   if (event.which == 2) { // middle button
     flipPause()
@@ -749,32 +501,9 @@ function mouseDown(event) {
     flipPause()
     event.preventDefault()
   }
-  /*
-  if (event.which == 1 && !$('video')[0].paused) { // left button
-    $('video')[0].pause()
-    pausedFromLeftButtonHold = true
-    $('body').addClass('unselectable')
-    //$('video').trigger(event)
-    //event.preventDefault()
-    //event.stopImmediatePropagation()
-    //event.stopPropagation()
-  }
-  */
 }
 
 //$(document).mousedown(mouseDown)
-
-/*
-function mouseUp(event) {
-  if (event.which == 1 && pausedFromLeftButtonHold) { // left button, resume
-    pausedFromLeftButtonHold = false
-    $('body').removeClass('unselectable')
-    $('video')[0].play()
-  }
-}
-
-$(document).mouseup(mouseUp)
-*/
 
 function videoClicked(x) {
   var vid = $('video')[0]
@@ -793,21 +522,10 @@ callOnceElementAvailable('video', function() {
 })
 
 function onScroll() {
-  //$('video')[0].pause()
   console.log('scrolling!')
   if (gotoDialogInProgress || mouseWheelMoveInProgress) return
   $.doTimeout('scroll', 100, function() {
     if (gotoDialogInProgress || mouseWheelMoveInProgress) return
-    /*
-    var videoHeight = $('video')[0].videoHeight
-    var videoBottom = $('video').offset().top + videoHeight
-    var windowBottom = $('#bottomOfScreen').offset().top
-    var windowTop = $(window).scrollTop()
-    var center = (windowBottom + videoBottom) / 2
-    */
-    //console.log(center)
-    //console.log($.nearest({x: $(window).width()/2, y: center}, '.wordspan')[0])
-    //var dialognum = $($.nearest({x: $(window).width()/2, y: center}, '.wordspan')[0]).attr('dialognum')
     var dialognum = $($.nearest({x: $(window).width()/2, y: $(window).height() - $('#bottomFrame').height()/2}, '.wordspan')[0]).attr('dialognum')
     console.log(dialognum)
     gotoDialog(dialognum, true)
@@ -852,15 +570,86 @@ function startPlayback() {
   $('#viewingRegion').show()
   var subtitleText = $('#subtitleInput').val().trim()
   var nativeSubtitleText = $('#nativeSubtitleInput').val().trim()
-  now.initializeSubtitleText(subtitleText, subLanguage, targetLanguage, function() {
-    now.getFullAnnotatedSub(setNewSubtitleList)
-    now.initializeNativeSubtitleText(nativeSubtitleText)
-  })
+  var uploadedSRTorASUBFilename = document.getElementById("srtInputFile").value
+  var uploadedSRTorASUBextension = uploadedSRTorASUBFilename.slice(uploadedSRTorASUBFilename.lastIndexOf(".") + 1, uploadedSRTorASUBFilename.length)
+  if (uploadedSRTorASUBextension.toLowerCase() === "asub") {
+  //  setNewSubtitleList(parseASUBfile(subtitleText))
+    var asubLoadedArray = new parseASUBfile(subtitleText);
+    setNewSubtitleList(asubLoadedArray.timesAndSubtitles)
+  } else {
+    now.initializeSubtitleText(subtitleText, subLanguage, targetLanguage, function() {
+      now.getFullAnnotatedSub(setNewSubtitleList)
+      now.initializeNativeSubtitleText(nativeSubtitleText)
+    })
+  }
   var subpixSource = getUrlParameters()['subpix']
   if (subpixSource != null) {
     now.initializeSubPix(subpixSource)
   }
 }
+
+// function parseASUBfile(asubFileText) {
+//   toDeciSeconds
+// }
+
+// parseASUBfile = (function() {
+  function parseASUBfile(subtitleText) {  // copied (but modified) from SubtitleRead() (inside subtitleread.js used on node.js server side)
+    var currentSub, subIndex, awaitingTime, endTime, lastStartTime, line, subContents, startTime, timeToSubtitle, timesAndSubtitles, triplet, _i, _j, _len, _len1, _ref, _ref1;
+    this.subtitleText = subtitleText;
+    lastStartTime = 0;
+    timeToSubtitle = {};
+    timesAndSubtitles = [];
+    awaitingTime = true;
+    startTime = 0.0;
+    endTime = 0.0;
+    subContents = [];
+    subIndex = '0';
+    currentSub = [];
+    _ref = subtitleText.split('\n');
+    for (_i = 0, _len = _ref.length; _i <= _len; _i++) {
+      if (_i < _ref.length) {
+        line = _ref[_i];
+        line = line.trim();
+      }
+      if ((line === '') || (_i === _ref.length)) {
+        if ((subContents !== '') & (awaitingTime === false)) {
+          timesAndSubtitles.push([startTime, endTime, subContents]);
+        //  timesAndSubtitles[subIndex].push(subContents.split('\n'))
+        }
+        if (awaitingTime === false) {subIndex++};
+        awaitingTime = true;
+        subContents = []
+      } else if (awaitingTime) {
+        if (line.indexOf(' --> ') !== -1) {
+          awaitingTime = false;
+          _ref1 = line.split(' --> '), startTime = _ref1[0], endTime = _ref1[1];
+          startTime = toDeciSeconds(startTime);
+          endTime = toDeciSeconds(endTime);
+          awaitingTime = false;
+        }
+      } else if (_i < _ref.length) {
+      //  subContents = (subContents + '\n' + line).trim();
+      //  subContents.push(line.trim().split('|', 3));
+        var workingLine = []
+        workingLine = line.trim().split('|', 2)  // put the chinese and pinyin elements into workingLine
+        workingLine.push(line.slice(workingLine[0].length + workingLine[1].length + 2))  // put the definitions (remainder of the line) into workingLine.  Cannot use split('|') for this, because the definitions can contain the pipe.
+        subContents.push($.map(workingLine, $.trim)); // trim the three elements of workingLine, and add to subContents.
+      }
+    }
+    this.timesAndSubtitles = timesAndSubtitles;
+    this.lastStartTime = lastStartTime;
+  }
+// })();
+
+toDeciSeconds = function(time) {
+  var hour, min, sec, _ref;
+  time = time.split(',').join('.');
+  _ref = time.split(':'), hour = _ref[0], min = _ref[1], sec = _ref[2];
+  hour = parseFloat(hour);
+  min = parseFloat(min);
+  sec = parseFloat(sec);
+  return Math.round((hour * 3600 + min * 60 + sec) * 10);
+};
 
 function isLocalFile() {
   return ($('#urlOrFile').val() == 'file')
@@ -963,7 +752,6 @@ return map;
 }
 
 now.clientlog = function(text) {
-  //console.log((new Date().getTime()/1000).toString() + ' | ' + text)
   console.log(text)
 }
 
