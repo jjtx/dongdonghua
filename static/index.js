@@ -121,10 +121,10 @@ function onWordHover(wordid) {
   // now.serverlog('entered: wordid=' + wordid + ' word=' + $('#WS' + wordid).text())
 }
 
+var subtitleGetter
 var initializeNativeSubtitleText = function(subtitleText, doneCallback) {
   var nativeSubtitleGetterReal;
-  var subtitleGetter = new SubtitleRead(subtitleText);
-  window.subtitleGetter = subtitleGetter;
+  subtitleGetter = new SubtitleRead(subtitleText);
   nativeSubtitleGetterReal = new SubtitleRead(subtitleText);
   var subtitleAtTimeAsync = function(deciSec, callback) {
     var end, idx, isOverHalfOfNativeOrTargetCovered, nend, nstart, nsubtext, start, subtext, translations, _ref, _ref1, _ref2;
@@ -325,11 +325,11 @@ function showFullTranslation(n) {
 
 var getNativeSubAtTime = function(time, callback) {
   var endTime, idx, midTime, startTime, subLine, _ref;
-  idx = window.subtitleGetter.getSubtitleIndexFromTime(time);
+  idx = subtitleGetter.getSubtitleIndexFromTime(time);
   _ref = window.asubTimesAndSubtitles[idx], startTime = _ref[0], endTime = _ref[1], subLine = _ref[2];
   midTime = Math.floor((startTime + endTime) / 2);
   // return nativeSubtitleGetter.subtitleAtTimeAsync(midTime, callback);
-  return window.subtitleGetter.subtitleAtTimeAsync(midTime, callback);
+  return subtitleGetter.subtitleAtTimeAsync(midTime, callback);
 };
 
 function setNewSubtitles(annotatedWordList) {
@@ -348,9 +348,12 @@ function setNewSubtitleList(annotatedWordListListOrig) {
   setNewSubtitleListReal(annotatedWordListList);
 }
 
+// note: downloadASUBfile is not used with the local player!!!
 function downloadASUBfile(annotatedWordListListOrigDL) {
   var asubDLstring ="";
   var subtitleInputTemp = $('#subtitleInput').val().trim();
+  subtitleInputTemp = subtitleInputTemp.replace(/\n\n\n\n/g, "\n\n"); // in case there are extra newlines, trim them to two
+  subtitleInputTemp = subtitleInputTemp.replace(/\n\n\n/g, "\n\n");
   var originalSubtitleInputForTimes = subtitleInputTemp.split("\n\n");
   while (originalSubtitleInputForTimes.indexOf("") > -1) {  // remove all null elements (this happens if there are more than two "\n" between subtitles)
     originalSubtitleInputForTimes.splice(originalSubtitleInputForTimes.indexOf(""),1);
@@ -722,11 +725,13 @@ function startPlayback() {
   $('#viewingRegion').show()
   var subtitleText = $('#subtitleInput').val().trim()
   var nativeSubtitleText = $('#nativeSubtitleInput').val().trim()
+  var vocabularyText = $('#vocabularyInput').val().trim()
   var uploadedSRTorASUBFilename = document.getElementById("srtInputFile").value
   var uploadedSRTorASUBextension = uploadedSRTorASUBFilename.slice(uploadedSRTorASUBFilename.lastIndexOf(".") + 1, uploadedSRTorASUBFilename.length)
   if (uploadedSRTorASUBextension.toLowerCase() === "asub") {
   //  setNewSubtitleList(parseASUBfile(subtitleText))
     var asubLoadedArray = new parseASUBfile(subtitleText);
+    var vocabularyArray = new parseVocabFile(vocabularyText);
     setNewSubtitleList(asubLoadedArray.asubTimesAndSubtitles)
     initializeNativeSubtitleText(nativeSubtitleText)
   } else {
@@ -741,59 +746,74 @@ function startPlayback() {
   }
 }
 
-// function parseASUBfile(asubFileText) {
-//   toDeciSeconds
-// }
 
-// parseASUBfile = (function() {
-  function parseASUBfile(subtitleText) {  // copied (but modified) from SubtitleRead() (inside subtitleread.js used on node.js server side)
-    var currentSub, subIndex, awaitingTime, endTime, lastStartTime, line, subContents, startTime, timeToSubtitle, asubTimesAndSubtitles, triplet, _i, _j, _len, _len1, _ref, _ref1;
-    this.subtitleText = subtitleText;
-    lastStartTime = 0;
-    timeToSubtitle = {};
-    asubTimesAndSubtitles = [];
-    awaitingTime = true;
-    startTime = 0.0;
-    endTime = 0.0;
-    subContents = [];
-    subIndex = '0';
-    currentSub = [];
-    _ref = subtitleText.split('\n');
-    for (_i = 0, _len = _ref.length; _i <= _len; _i++) {
-      if (_i < _ref.length) {
-        line = _ref[_i];
-        line = line.trim();
-      }
-      if ((line === '') || (_i === _ref.length)) {
-        if ((subContents !== '') & (awaitingTime === false)) {
-          asubTimesAndSubtitles.push([startTime, endTime, subContents]);
-        //  asubTimesAndSubtitles[subIndex].push(subContents.split('\n'))
-        }
-        if (awaitingTime === false) {subIndex++};
-        awaitingTime = true;
-        subContents = []
-      } else if (awaitingTime) {
-        if (line.indexOf(' --> ') !== -1) {
-          awaitingTime = false;
-          _ref1 = line.split(' --> '), startTime = _ref1[0], endTime = _ref1[1];
-          startTime = toDeciSeconds(startTime);
-          endTime = toDeciSeconds(endTime);
-          awaitingTime = false;
-        }
-      } else if (_i < _ref.length) {
-      //  subContents = (subContents + '\n' + line).trim();
-      //  subContents.push(line.trim().split('|', 3));
-        var workingLine = []
-        workingLine = line.trim().split('|', 2)  // put the chinese and pinyin elements into workingLine
-        workingLine.push(line.slice(workingLine[0].length + workingLine[1].length + 2))  // put the definitions (remainder of the line) into workingLine.  Cannot use split('|') for this, because the definitions can contain the pipe.
-        subContents.push($.map(workingLine, $.trim)); // trim the three elements of workingLine, and add to subContents.
-      }
+function parseASUBfile(subtitleText) {  // copied (but modified) from SubtitleRead() (inside subtitleread.js used on node.js server side)
+  var currentSub, subIndex, awaitingTime, endTime, lastStartTime, line, subContents, startTime, timeToSubtitle, triplet, _i, _j, _len, _len1, _ref, _ref1;
+  var asubTimesAndSubtitles = [];
+  this.subtitleText = subtitleText;
+  lastStartTime = 0;
+  timeToSubtitle = {};
+  awaitingTime = true;
+  startTime = 0.0;
+  endTime = 0.0;
+  subContents = [];
+  subIndex = '0';
+  currentSub = [];
+  _ref = subtitleText.split('\n');
+  for (_i = 0, _len = _ref.length; _i <= _len; _i++) {
+    if (_i < _ref.length) {
+      line = _ref[_i];
+      line = line.trim();
     }
-    this.asubTimesAndSubtitles = asubTimesAndSubtitles;
-    window.asubTimesAndSubtitles = this.asubTimesAndSubtitles
-    this.lastStartTime = lastStartTime;
+    if ((line === '') || (_i === _ref.length)) {
+      if ((subContents !== '') & (awaitingTime === false)) {
+        asubTimesAndSubtitles.push([startTime, endTime, subContents]);
+      //  asubTimesAndSubtitles[subIndex].push(subContents.split('\n'))
+      }
+      if (awaitingTime === false) {subIndex++};
+      awaitingTime = true;
+      subContents = []
+    } else if (awaitingTime) {
+      if (line.indexOf(' --> ') !== -1) {
+        awaitingTime = false;
+        _ref1 = line.split(' --> '), startTime = _ref1[0], endTime = _ref1[1];
+        startTime = toDeciSeconds(startTime);
+        endTime = toDeciSeconds(endTime);
+        awaitingTime = false;
+      }
+    } else if (_i < _ref.length) {
+    //  subContents = (subContents + '\n' + line).trim();
+    //  subContents.push(line.trim().split('|', 3));
+      var workingLine = []
+      workingLine = line.trim().split('|', 2)  // put the chinese and pinyin elements into workingLine
+      workingLine.push(line.slice(workingLine[0].length + workingLine[1].length + 2))  // put the definitions (remainder of the line) into workingLine.  Cannot use split('|') for this, because the definitions can contain the pipe.
+      subContents.push($.map(workingLine, $.trim)); // trim the three elements of workingLine, and add to subContents.
+    }
   }
-// })();
+  this.asubTimesAndSubtitles = asubTimesAndSubtitles;
+  window.asubTimesAndSubtitles = this.asubTimesAndSubtitles
+}
+
+var vocabArray = []
+var vocabSectionTitleArray = [];
+
+function parseVocabFile(vocabularyText) {
+ var _i, _len, _i2, _len2;
+  vocabularyText = vocabularyText.replace(/\n\n\n\n/g, "\n\n"); // in case there are extra newlines, trim them to two
+  vocabularyText = vocabularyText.replace(/\n\n\n/g, "\n\n");
+  var vocabSplitBySection = vocabularyText.split("\n\n");
+  var currentVocabSection = []
+  for(_i = 0, _len = vocabSplitBySection.length; _i < _len; _i++) {
+    currentVocabSection = vocabSplitBySection[_i].split("\n")
+    vocabSectionTitleArray.push(currentVocabSection[0])
+    for(_i2 = 1, _len2 = currentVocabSection.length; _i2 < _len2; _i2++) {
+      var currentLine = currentVocabSection[_i2].split('\t');
+      var chineseWord = currentLine[0]
+      var definition = currentLine[1]
+      vocabArray.push([chineseWord, definition, _i])  // _i can be used later as an index to get the vocabSectionTitle
+    }
+  }
+}
 
 toDeciSeconds = function(time) {
   var hour, min, sec, _ref;
@@ -952,6 +972,16 @@ reader.onloadend = function( ){
 }
 var srtfile = $('#nativeSrtInputFile')[0].files[0]
 reader.readAsText(srtfile)
+}
+
+function vocabularyFileUploaded() {
+var reader = new FileReader()
+reader.onloadend = function( ){
+  $('#vocabularyInput').val(reader.result)
+  textChanged()
+}
+var vocabfile = $('#vocabularyInputFile')[0].files[0]
+reader.readAsText(vocabfile)
 }
 
 function textChanged() {

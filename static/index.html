@@ -145,7 +145,11 @@ Optional English Subtitle (<a href="http://en.wikipedia.org/wiki/SubRip#SubRip_t
 
 <br/>
 
-<textarea id="nativeSubtitleInput" style="width: 100%; height: 100px" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()"></textarea><br /><br />
+<textarea id="nativeSubtitleInput" style="width: 100%; height: 100px" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()"></textarea>
+
+Optional Vocabulary File (VOCAB format):
+<input type="file" accept=".vocab" id="vocabularyInputFile" style="width: 500px" onkeypress="vocabularyFileUploaded()" onchange="vocabularyFileUploaded()" onkeyup="vocabularyFileUploaded()" />
+<textarea id="vocabularyInput" style="width: 100%; height: 100px" onkeypress="textChanged()" onchange="textChanged()" onkeyup="textChanged()"></textarea><br /><br />
 
 <button onclick="startPlayback()" disabled="true" id="startPlaybackButton">Start Video</button>
 
