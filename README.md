@@ -1,6 +1,7 @@
 dongdonghua (JJ's fork - Server version)
 ===========
 
+11-7-2014
 The master branch is the server version, and there is also a "local player" branch which can be used without the server.
 
 I created the "local player" after adding the option to download an ASUB file to the server version.  (The "download ASUB file" option saves the word definitions along with the Chinese subtitles.)  
