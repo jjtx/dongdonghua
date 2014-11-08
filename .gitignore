@@ -4,9 +4,5 @@
 *.webm
 *.srt
 *~
-client_id_and_secret.txt
-static/cedict_full.txt
-static/edict2_full.txt
-static/examplevids.js
-node_modules/*
-static/FileSaver.js-master/*
+FileSaver.js
+Smart Subtitles goals
