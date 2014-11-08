@@ -1,4 +1,4 @@
-dongdonghua (JJ's fork)
+dongdonghua (JJ's fork - Server version)
 ===========
 
 The master branch is the server version, and there is also a "local player" branch which can be used without the server.
