@@ -82,7 +82,7 @@ function placeTranslationText(wordid) {
   var height = chineseChar.height()
   $('#translation').show()
   $('#translation').css('position', 'absolute')
-  $('#translation').css({'left': (pos.left), 'top': (pos.top + 10 - 650 + $('#bottomFrame').scrollTop() + height), })
+  $('#translation').css({'left': (pos.left), 'top': (pos.top + 10 - videoFrameHeight + $('#bottomFrame').scrollTop() + height), })
 }
 
 function onWordLeave(wordid) {
@@ -275,7 +275,7 @@ function gotoDialogNoVidSeek(dialogNum, dontanimate, automatic) {
   $('.tb' + dialogNum).show()
 
   var oldOffset = $('#bottomFrame').scrollTop()
-  var newOffset = $('#whitespaceS' + dialogNum).offset().top - $('#bottomFrame').offset().top + $('#bottomFrame').scrollTop() - $('#bottomFrame').height()/2 - $('.tb' + dialogNum).height()/2 - $('#whitespaceS' + dialogNum).height()/2
+  var newOffset = $('#whitespaceS' + dialogNum).offset().top - $('#bottomFrame').offset().top + $('#bottomFrame').scrollTop() - $('#bottomFrame').height()/2 - $('.tb' + dialogNum).height()/2 - $('#whitespaceS' + dialogNum).height()/2 - 2; // -2 at the end gives a little more space between the video and text
   if (Math.abs(newOffset - oldOffset) > $(window).width()) {
     $('#bottomFrame').animate({scrollTop: newOffset}, 30)
     setTimeout(function() {gotoDialogInProgress = false}, 130)
@@ -461,10 +461,23 @@ window.onresize = function(event) {
   videoLoaded();
 };
 
-function videoLoaded() {
-  var videoWidth = $('video')[0].clientWidth
-  // $('video').css('left', '50%')
-  $('video').css('margin-left', Math.round(Math.max(0,(viewingRegion.clientWidth-videoWidth)/2)))
+var videoFrameHeight
+
+function videoLoaded() {            // This function automatically resizes the video when the window is resized
+  var minimumBottomFrameHeight = 540; // 140 for 1 subtitle line, 340 for 3 subtitle lines, 540 for 5 subtitle lines
+  var nowVideoWidth = $('video')[0].clientWidth;
+  var vfhWithoutNarrowing = Math.max(0,Math.round(window.innerHeight - minimumBottomFrameHeight));
+  var videoWidthInFrameWithoutNarrowing = (vfhWithoutNarrowing / document.getElementById("videoControls").videoHeight) * document.getElementById("videoControls").videoWidth;
+  if ($('#fixedVideoFrame').width() < videoWidthInFrameWithoutNarrowing) {
+    vfhAdjusted = Math.round(vfhWithoutNarrowing * ($('#fixedVideoFrame').width()/videoWidthInFrameWithoutNarrowing));
+    videoFrameHeight = vfhAdjusted;
+  } else {
+    videoFrameHeight = vfhWithoutNarrowing;
+  }
+  document.getElementById("videoControls").style.height=videoFrameHeight + "px";
+  $('#fixedVideoFrame').height(videoFrameHeight + "px");
+  document.getElementById("bottomFrame").style.top=(videoFrameHeight) + "px";
+  $('video').css('margin-left', Math.round(Math.max(0,(fixedVideoFrame.clientWidth-nowVideoWidth)/2)));
 }
 
 function dialogEndTimeSec(dialogNum) {
