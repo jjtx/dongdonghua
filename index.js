@@ -465,7 +465,7 @@ var videoFrameHeight
 
 function videoLoaded() {            // This function automatically resizes the video when the window is resized
   var minimumBottomFrameHeight = 540; // 140 for 1 subtitle line, 340 for 3 subtitle lines, 540 for 5 subtitle lines
-  var nowVideoWidth = $('video')[0].clientWidth;
+  var nowVideoWidth;
   var vfhWithoutNarrowing = Math.max(0,Math.round(window.innerHeight - minimumBottomFrameHeight));
   var videoWidthInFrameWithoutNarrowing = (vfhWithoutNarrowing / document.getElementById("videoControls").videoHeight) * document.getElementById("videoControls").videoWidth;
   if ($('#fixedVideoFrame').width() < videoWidthInFrameWithoutNarrowing) {
@@ -477,6 +477,8 @@ function videoLoaded() {            // This function automatically resizes the v
   document.getElementById("videoControls").style.height=videoFrameHeight + "px";
   $('#fixedVideoFrame').height(videoFrameHeight + "px");
   document.getElementById("bottomFrame").style.top=(videoFrameHeight) + "px";
+  document.getElementById("settingsButtonArea").style.top=(videoFrameHeight) + "px";
+  nowVideoWidth = $('video')[0].clientWidth;
   $('video').css('margin-left', Math.round(Math.max(0,(fixedVideoFrame.clientWidth-nowVideoWidth)/2)));
 }
 
@@ -744,7 +746,6 @@ function startPlayback() {
   if (uploadedSRTorASUBextension.toLowerCase() === "asub") {
   //  setNewSubtitleList(parseASUBfile(subtitleText))
     var asubLoadedArray = new parseASUBfile(subtitleText);
-    var vocabularyArray = new parseVocabFile(vocabularyText);
     setNewSubtitleList(asubLoadedArray.asubTimesAndSubtitles)
     initializeNativeSubtitleText(nativeSubtitleText)
   } else {
@@ -752,6 +753,9 @@ function startPlayback() {
     //  now.getFullAnnotatedSub(setNewSubtitleList)
     //  now.initializeNativeSubtitleText(nativeSubtitleText)
     //})
+  }
+  if (vocabularyText != '') {
+    var vocabularyArray = new parseVocabFile(vocabularyText);
   }
   var subpixSource = getUrlParameters()['subpix']
   if (subpixSource != null) {
@@ -1011,6 +1015,9 @@ function textChanged() {
       $('#startPlaybackButton')[0].disabled = true
     }
   }
+}
+
+function displaySettings() {
 }
 
 function onVideoError(s) {

@@ -4,5 +4,8 @@
 *.webm
 *.srt
 *~
+client_id_and_secret.txt
 FileSaver.js
 Smart Subtitles goals
+node_modules/*
+static/*
