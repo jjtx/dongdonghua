@@ -39,6 +39,7 @@ function leftKeyPressed() {
   	onWordLeave('wid_q_' + pdn +'_i_0')
   	currentWordHighlighted = -1
   } else {
+    onWordLeave('wid_q_' + pdn +'_i_' + currentWordHighlighted);
     onWordHover('wid_q_' + pdn +'_i_' + (--currentWordHighlighted))
   }
 }
@@ -55,7 +56,8 @@ function rightKeyPressed() {
   	onWordLeave('wid_q_' + pdn +'_i_' + tblWordCount)
   	currentWordHighlighted = -1
   } else {
-  onWordHover('wid_q_' + pdn +'_i_' + (++currentWordHighlighted))
+    onWordLeave('wid_q_' + pdn +'_i_' + currentWordHighlighted);
+    onWordHover('wid_q_' + pdn +'_i_' + (++currentWordHighlighted))
   }
 }
 
@@ -70,7 +72,8 @@ function checkIfCurrentWordStillHighlighted(dialogNumber) {
 }
 
 function clearHoverTrans() {
-  $('.currentlyHighlighted').css('background-color', '')
+  //$('.currentlyHighlighted').css('background-color', '')
+  $('.currentlyHighlighted').css('background-color', 'PapayaWhip')
   $('.currentlyHighlighted').removeClass('currentlyHighlighted')
   $('#translation').hide()
 }
@@ -86,8 +89,14 @@ function placeTranslationText(wordid) {
 }
 
 function onWordLeave(wordid) {
-  $($('.'+ wordid)).css('background-color', '')
-  $($('.'+ wordid)).removeClass('currentlyHighlighted')
+  if ($($('#WS' + wordid)).hasClass('vocab')) {
+    $($('.PS'+ wordid)).css('background-color', '');
+    $($('.WS'+ wordid)).css('background-color', 'PapayaWhip');
+  } else {
+    $($('.'+ wordid)).css('background-color', '');
+  }
+  $($('.'+ wordid)).removeClass('currentlyHighlighted');
+
   // now.serverlog('left: wordid=' + wordid + ' word=' + $('#WS' + wordid).text())
   if (autoShowTranslation) {
     if ($('.currentlyHighlighted').length == 0)
@@ -374,87 +383,82 @@ function downloadASUBfile(annotatedWordListListOrigDL) {
 }
 
 function setNewSubtitleListReal(annotatedWordListList) {
-annotatedWordListListG = annotatedWordListList
-$('#translationTriangle').hide()
-$('#translation').text('')
-$('#translation').attr('isFullTranslation', 'false')
-var nhtml = []
-
-dialogStartTimesDeciSeconds = []
-
-var wordToId = {}
-
-for (var q = 0; q < annotatedWordListList.length; ++q) {
-var startTimeDeciSeconds = annotatedWordListList[q][0]
-var endTimeDeciSeconds = annotatedWordListList[q][1]
-dialogStartTimesDeciSeconds[q] = startTimeDeciSeconds
-var startHMS = toHourMinSec(Math.round(startTimeDeciSeconds/10))
-var annotatedWordList = annotatedWordListList[q][2]
-
-//nhtml.push('<table border="0" cellspacing="0">')
-nhtml.push('<table id = tbl' + q + ' border="0" cellspacing="0">')
-
-var pinyinRow = []
-var wordRow = []
-var whitespaceRow = []
-
-var allWords = []
-for (var i = 0; i < annotatedWordList.length; ++i) {
-  allWords.push(annotatedWordList[i][0])
-}
-var currentSentence = escapeHtmlQuotes(allWords.join(''))
-
-var firstWordId = ''
-
-for (var i = 0; i < annotatedWordList.length; ++i) {
-var word = annotatedWordList[i][0]
-var pinyin = annotatedWordList[i][1]
-var english = annotatedWordList[i][2]
-if (english == null) english = ''
-else english = escapeHtmlQuotes(english)
-
-if (wordToId[word] == null)
-  wordToId[word] = Math.round(Math.random() * 1000000)
-var randid = 'wid_q_' + q + '_i_' + i
-if (i == 0) firstWordId = randid;
-
-coloredSpans = []
-var pinyinspan = '<td style="font-size: xx-small"></td>'
-if (pinyin) {
-pinyinWords = pinyin.split(' ')
-
-for (var j = 0; j < pinyinWords.length; ++j) {
-  var curWord = pinyinWords[j]
-  var tonecolor = ['red', '#AE5100', 'green', 'blue', 'black'][getToneNumber(curWord)-1]
-  coloredSpans.push('<span style="color: ' + tonecolor + '">' + curWord + '</span>')
-}
-pinyinspan = '<td nowrap="nowrap" style="text-align: center;" class="' + randid + ' hoverable pinyinspan pys' + q + '" onmouseover="onWordHover(\'' + randid + '\')" onmouseout="onWordLeave(\'' + randid + '\')" onclick="wordClicked(' + q + ')">' + coloredSpans.join(' ') + '</td>'
-}
-
-var wordspan = '<td nowrap="nowrap" dialognum=' + q + ' style="text-align: center;" hovertext="' + english + '" id="WS' + randid + '" class="' + randid + ' hoverable wordspan ws' + q + '" onmouseover="onWordHover(\'' + randid + '\')" onmouseout="onWordLeave(\'' + randid + '\')" onclick="wordClicked(' + q + ')">' + word + '</td>'
-if (word == ' ') {
-  wordspan = '<td style="font-size: xx-small">　</td>'
-}
-
-pinyinRow.push(pinyinspan)
-wordRow.push(wordspan)
-whitespaceRow.push('<td id="whitespaceS' + q + '" style="font-size: 32px">　</td>')
-
-}
-
-// wordRow.push('<td id="translate"' + q + '" style="font-size: 32px">　</td>') // remove translate button here (also remove the "translate" from this at the end of the next line: "(' + q + ')">translate</button>")
-wordRow.push('<td><button id="translate"' + q + '" style="font-size: 32px; display: none; white-space: nowrap" dialogNum="' + q + '" class="translateButton tb' + q + '" startTimeDeciSeconds="' + startTimeDeciSeconds + '" endTimeDeciSeconds="' + endTimeDeciSeconds + '" currentSentence="' + currentSentence + '" firstWordId="' + firstWordId + '" onclick="translateButtonPressed(' + q + ')"></button></td>') // remove translate button here - may cause issues
-
-nhtml.push('<col>' + pinyinRow.join('') + '</col>')
-nhtml.push('<col>' + wordRow.join('') + '</col>')
-nhtml.push('<col>' + whitespaceRow.join('') + '</col>')
-
-nhtml.push('</table>')
-
-}
-
-$('#caption').html(nhtml.join(''))
-
+  annotatedWordListListG = annotatedWordListList
+  $('#translationTriangle').hide()
+  $('#translation').text('')
+  $('#translation').attr('isFullTranslation', 'false')
+  var nhtml = []
+  dialogStartTimesDeciSeconds = []
+  var wordToId = {}
+  for (var q = 0; q < annotatedWordListList.length; ++q) {
+    var startTimeDeciSeconds = annotatedWordListList[q][0]
+    var endTimeDeciSeconds = annotatedWordListList[q][1]
+    dialogStartTimesDeciSeconds[q] = startTimeDeciSeconds
+    var startHMS = toHourMinSec(Math.round(startTimeDeciSeconds/10))
+    var annotatedWordList = annotatedWordListList[q][2]
+    //nhtml.push('<table border="0" cellspacing="0">')
+    nhtml.push('<table id = tbl' + q + ' border="0" cellspacing="0">')
+    var pinyinRow = []
+    var wordRow = []
+    var whitespaceRow = []
+    var allWords = []
+    for (var i = 0; i < annotatedWordList.length; ++i) {
+      allWords.push(annotatedWordList[i][0])
+    }
+    var currentSentence = escapeHtmlQuotes(allWords.join(''))
+    var firstWordId = ''
+    for (var i = 0; i < annotatedWordList.length; ++i) {
+      var word = annotatedWordList[i][0]
+      var pinyin = annotatedWordList[i][1]
+      var english = annotatedWordList[i][2]
+      var wordMatchesVocabListAllMatches = []  // additional possible future use - go to vocab from the subtitle
+      var wordMatchesVLPosition = -1
+      vocabArrayWordsOnly4FastSearch.indexOf(word);
+      if (word != ' ') wordMatchesVLPosition = vocabArrayWordsOnly4FastSearch.indexOf(word);
+      while (wordMatchesVLPosition != -1) {
+        vocabArray[wordMatchesVLPosition].push([q,i]) // q = tbl# (subtitle), i = word # (in that subtitle)
+        wordMatchesVocabListAllMatches.push(wordMatchesVLPosition)
+        wordMatchesVLPosition = vocabArrayWordsOnly4FastSearch.indexOf(word,wordMatchesVLPosition+1);
+      }
+      if (english == null) english = ''
+      else english = escapeHtmlQuotes(english)
+      if (wordToId[word] == null) wordToId[word] = Math.round(Math.random() * 1000000)
+      var randid = 'wid_q_' + q + '_i_' + i
+      if (i == 0) firstWordId = randid;
+      coloredSpans = []
+      var pinyinspan = '<td style="font-size: xx-small"></td>'
+      if (pinyin) {
+        pinyinWords = pinyin.split(' ')
+        for (var j = 0; j < pinyinWords.length; ++j) {
+          var curWord = pinyinWords[j]
+          var tonecolor = ['red', '#AE5100', 'green', 'blue', 'black'][getToneNumber(curWord)-1]
+          coloredSpans.push('<span style="color: ' + tonecolor + '">' + curWord + '</span>')
+        }
+        pinyinspan = '<td nowrap="nowrap" style="text-align: center;" class="' + randid + ' hoverable pinyinspan pys' + q + ' PS' + randid + '" onmouseover="onWordHover(\'' + randid + '\')" onmouseout="onWordLeave(\'' + randid + '\')" onclick="wordClicked(' + q + ')">' + coloredSpans.join(' ') + '</td>'
+      }
+      if (wordMatchesVocabListAllMatches.length == 0) {
+        var wordspan = '<td nowrap="nowrap" dialognum=' + q + ' style="text-align: center;" hovertext="' + english + '" id="WS' + randid + '" class="' + randid + ' hoverable wordspan ws' + q + '" onmouseover="onWordHover(\'' + randid + '\')" onmouseout="onWordLeave(\'' + randid + '\')" onclick="wordClicked(' + q + ')">' + word + '</td>';
+      } else {
+        var wordspan = '<td nowrap="nowrap" dialognum=' + q + ' style="text-align: center; background-color: PapayaWhip;" hovertext="' + english + '" id="WS' + randid + '" class="' + randid + ' hoverable wordspan ws' + q + ' vocab WS' + randid + '" onmouseover="onWordHover(\'' + randid + '\')" onmouseout="onWordLeave(\'' + randid + '\')" onclick="wordClicked(' + q + ')">' + word + '</td>';
+        for (var k = 0; k < wordMatchesVocabListAllMatches.length; ++k) {
+          $('<span>' + q + ' </span>').appendTo('.vcbi' + wordMatchesVocabListAllMatches[k]);
+        }
+      }
+      if (word == ' ') {
+        wordspan = '<td style="font-size: xx-small">　</td>'
+      }
+      pinyinRow.push(pinyinspan)
+      wordRow.push(wordspan)
+      whitespaceRow.push('<td id="whitespaceS' + q + '" style="font-size: 32px">　</td>')
+    }
+    // wordRow.push('<td id="translate"' + q + '" style="font-size: 32px">　</td>') // remove translate button here (also remove the "translate" from this at the end of the next line: "(' + q + ')">translate</button>")
+    wordRow.push('<td><button id="translate"' + q + '" style="font-size: 32px; display: none; white-space: nowrap" dialogNum="' + q + '" class="translateButton tb' + q + '" startTimeDeciSeconds="' + startTimeDeciSeconds + '" endTimeDeciSeconds="' + endTimeDeciSeconds + '" currentSentence="' + currentSentence + '" firstWordId="' + firstWordId + '" onclick="translateButtonPressed(' + q + ')"></button></td>') // remove translate button here - may cause issues
+    nhtml.push('<col>' + pinyinRow.join('') + '</col>')
+    nhtml.push('<col>' + wordRow.join('') + '</col>')
+    nhtml.push('<col>' + whitespaceRow.join('') + '</col>')
+    nhtml.push('</table>')
+  }
+  $('#caption').html(nhtml.join(''))
 }
 
 window.onresize = function(event) {
@@ -464,7 +468,7 @@ window.onresize = function(event) {
 var videoFrameHeight
 
 function videoLoaded() {            // This function automatically resizes the video when the window is resized
-  var minimumBottomFrameHeight = 540; // 140 for 1 subtitle line, 340 for 3 subtitle lines, 540 for 5 subtitle lines
+  var minimumBottomFrameHeight = 340; // 140 for 1 subtitle line, 340 for 3 subtitle lines, 540 for 5 subtitle lines
   var nowVideoWidth;
   var vfhWithoutNarrowing = Math.max(0,Math.round(window.innerHeight - minimumBottomFrameHeight));
   var videoWidthInFrameWithoutNarrowing = (vfhWithoutNarrowing / document.getElementById("videoControls").videoHeight) * document.getElementById("videoControls").videoWidth;
@@ -478,6 +482,7 @@ function videoLoaded() {            // This function automatically resizes the v
   $('#fixedVideoFrame').height(videoFrameHeight + "px");
   document.getElementById("bottomFrame").style.top=(videoFrameHeight) + "px";
   document.getElementById("settingsButtonArea").style.top=(videoFrameHeight) + "px";
+  document.getElementById("vocabBottomFrame").style.top=(videoFrameHeight) + "px";
   nowVideoWidth = $('video')[0].clientWidth;
   $('video').css('margin-left', Math.round(Math.max(0,(fixedVideoFrame.clientWidth-nowVideoWidth)/2)));
 }
@@ -645,19 +650,21 @@ function getCurrentDialogNum() {
 mouseWheelMoveInProgress = false
 
 function mouseWheelMove(event, delta) {
-  event.preventDefault()
-  if (gotoDialogInProgress) {
+  if (document.getElementById("settingsButtonArea").style.display != "none") {  
+    event.preventDefault()
+    if (gotoDialogInProgress) {
+      return false
+    }
+    mouseWheelMoveInProgress = true
+    var currentDialogNum = getCurrentDialogNum()
+    if (delta > 0) {
+      gotoDialog(currentDialogNum - 1)
+    } else {
+      gotoDialog(currentDialogNum + 1)
+    }
+    mouseWheelMoveInProgress = false
     return false
   }
-  mouseWheelMoveInProgress = true
-  var currentDialogNum = getCurrentDialogNum()
-  if (delta > 0) {
-    gotoDialog(currentDialogNum - 1)
-  } else {
-    gotoDialog(currentDialogNum + 1)
-  }
-  mouseWheelMoveInProgress = false
-  return false
 }
 
 $(document).mousewheel(mouseWheelMove)
@@ -738,11 +745,16 @@ function startPlayback() {
   }
   $('#inputRegion').hide()
   $('#viewingRegion').show()
+  $('#settingsButtonArea').show()
   var subtitleText = $('#subtitleInput').val().trim()
   var nativeSubtitleText = $('#nativeSubtitleInput').val().trim()
   var vocabularyText = $('#vocabularyInput').val().trim()
   var uploadedSRTorASUBFilename = document.getElementById("srtInputFile").value
   var uploadedSRTorASUBextension = uploadedSRTorASUBFilename.slice(uploadedSRTorASUBFilename.lastIndexOf(".") + 1, uploadedSRTorASUBFilename.length)
+  if (vocabularyText != '') {
+    var vocabularyArray = new parseVocabFile(vocabularyText);
+    setNewVocabList(vocabArray);
+  }
   if (uploadedSRTorASUBextension.toLowerCase() === "asub") {
   //  setNewSubtitleList(parseASUBfile(subtitleText))
     var asubLoadedArray = new parseASUBfile(subtitleText);
@@ -753,9 +765,6 @@ function startPlayback() {
     //  now.getFullAnnotatedSub(setNewSubtitleList)
     //  now.initializeNativeSubtitleText(nativeSubtitleText)
     //})
-  }
-  if (vocabularyText != '') {
-    var vocabularyArray = new parseVocabFile(vocabularyText);
   }
   var subpixSource = getUrlParameters()['subpix']
   if (subpixSource != null) {
@@ -812,6 +821,7 @@ function parseASUBfile(subtitleText) {  // copied (but modified) from SubtitleRe
 }
 
 var vocabArray = []
+var vocabArrayWordsOnly4FastSearch = []
 var vocabSectionTitleArray = [];
 
 function parseVocabFile(vocabularyText) {
@@ -828,8 +838,44 @@ function parseVocabFile(vocabularyText) {
       var chineseWord = currentLine[0]
       var definition = currentLine[1]
       vocabArray.push([chineseWord, definition, _i])  // _i can be used later as an index to get the vocabSectionTitle
+      vocabArrayWordsOnly4FastSearch.push(chineseWord);
     }
   }
+}
+
+function setNewVocabList(vocabularyArray) {
+  vocabularyArrayG = vocabularyArray
+  //$('#translationTriangle').hide()
+  //$('#translation').text('')
+  //$('#translation').attr('isFullTranslation', 'false')
+  var vhtml = []
+  var wordToId = {}
+  var currentSectionIndex = -1
+  var sectionX_WordCounter = 0
+  for (var q = 0; q < vocabularyArray.length; ++q) {
+    var word = vocabularyArray[q][0]
+    var translation = vocabularyArray[q][1]
+    var SectionIndex = vocabularyArray[q][2]
+    var numberOfInstancesInVideo = 'not yet calculated'
+    if (SectionIndex != currentSectionIndex) {
+      currentSectionIndex = SectionIndex;
+      sectionX_WordCounter = 0;
+      if (currentSectionIndex > 0) {
+        vhtml.push('</div>') // close div for vSectX_Words
+      }
+      vhtml.push('<div id = "vSect' + (currentSectionIndex) + '_Title"; style="font-size: 32px; border-style: solid;">' + vocabSectionTitleArray[currentSectionIndex] + '</div>'); // <div id = vSectX_Title>Lesson 1</div>
+      vhtml.push('<div id = "vSect' + (currentSectionIndex) + '_Words">') // <div id = "vSectX_Words">
+    }
+    vhtml.push('<div id = "vS' + (currentSectionIndex) + 'W' + sectionX_WordCounter + '_Word" class = "vcbn' + q + '">'); // <div id="vSXWY_Word" class="vcbnQ">
+    vhtml.push(word + '   ' + translation + '   ' + 'Instances: '); // 你   nǐ - you  36  <-- click to expand, showing all instances
+    vhtml.push('</div>') // close div for vSXWY_Instances
+    vhtml.push('<div id = "vS' + currentSectionIndex + 'W' + sectionX_WordCounter + '_Instances" class = "vcbi' + q + '">') // <div id="vSXWY_Instances" class="vcbiQ">
+    // instances will be inserted here later
+    vhtml.push('</div>') // close div for vSXWY_Word
+    ++sectionX_WordCounter;
+  }
+  vhtml.push('</div>') // close div for vSectX_Words
+  $('#vocabRegion').html(vhtml.join(''))
 }
 
 toDeciSeconds = function(time) {
@@ -1018,6 +1064,27 @@ function textChanged() {
 }
 
 function displaySettings() {
+}
+
+function displayVocabFrame() {
+  var vid = $('video')[0];
+  vid.pause()
+  pausedVideo()
+  //$('#viewingRegion').hide()
+  //$('#bottomFrame').hide()
+  
+  $('#settingsButtonArea').hide()
+  $('#vocabBottomFrame').show()
+}
+
+function displayQuizFrame() {
+}
+
+function returnToViewingRegion() {
+  $('#vocabBottomFrame').hide()
+  $('#settingsButtonArea').show()
+  //$('#viewingRegion').show()
+  //$('#bottomFrame').show()
 }
 
 function onVideoError(s) {
