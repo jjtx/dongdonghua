@@ -73,7 +73,7 @@ function checkIfCurrentWordStillHighlighted(dialogNumber) {
 
 function clearHoverTrans() {
   //$('.currentlyHighlighted').css('background-color', '')
-  $('.currentlyHighlighted').css('background-color', 'PapayaWhip')
+  $('.currentlyHighlighted').css('background-color', '')
   $('.currentlyHighlighted').removeClass('currentlyHighlighted')
   $('#translation').hide()
 }
@@ -90,8 +90,9 @@ function placeTranslationText(wordid) {
 
 function onWordLeave(wordid) {
   if ($($('#WS' + wordid)).hasClass('vocab')) {
-    $($('.PS'+ wordid)).css('background-color', '');
-    $($('.WS'+ wordid)).css('background-color', 'PapayaWhip');
+    $($('.'+ wordid)).css('background-color', '');
+    $($('.'+ wordid)).css('border-style', 'dotted');
+    $($('.'+ wordid)).css('border-width', '1px');
   } else {
     $($('.'+ wordid)).css('background-color', '');
   }
@@ -225,14 +226,20 @@ prevDialogNum = -1
 dialogStartTimesDeciSeconds = []
 
 function wordClicked(dialogNum) {
-  var pd = getCurrentDialogNum()
+//  var pd = getCurrentDialogNum()
   gotoDialogPauseAfterDialog(dialogNum)
-  var vid = $('video')[0]
+//  var vid = $('video')[0]
 //  if (dialogNum < pd) {
 //    vid.pause()
 //  } else {
 //    vid.play()
 //  }
+}
+
+function wordClickedFromVocab(dialogNum) {
+  $('#vocabBottomFrame').hide()
+  $('#settingsButtonArea').show()
+  gotoDialogPauseAfterDialog(dialogNum)
 }
 
 function gotoDialog(dialogNum, dontanimate) {
@@ -434,14 +441,18 @@ function setNewSubtitleListReal(annotatedWordListList) {
           var tonecolor = ['red', '#AE5100', 'green', 'blue', 'black'][getToneNumber(curWord)-1]
           coloredSpans.push('<span style="color: ' + tonecolor + '">' + curWord + '</span>')
         }
-        pinyinspan = '<td nowrap="nowrap" style="text-align: center;" class="' + randid + ' hoverable pinyinspan pys' + q + ' PS' + randid + '" onmouseover="onWordHover(\'' + randid + '\')" onmouseout="onWordLeave(\'' + randid + '\')" onclick="wordClicked(' + q + ')">' + coloredSpans.join(' ') + '</td>'
+        if (wordMatchesVocabListAllMatches.length == 0) {
+          pinyinspan = '<td nowrap="nowrap" style="text-align: center;" class="' + randid + ' hoverable pinyinspan pys' + q + ' PS' + randid + '" onmouseover="onWordHover(\'' + randid + '\')" onmouseout="onWordLeave(\'' + randid + '\')" onclick="wordClicked(' + q + ')">' + coloredSpans.join(' ') + '</td>'
+        } else {
+          pinyinspan = '<td nowrap="nowrap" style="text-align: center; border-style: dotted; border-width: 1px" class="' + randid + ' hoverable pinyinspan pys' + q + ' PS' + randid + '" onmouseover="onWordHover(\'' + randid + '\')" onmouseout="onWordLeave(\'' + randid + '\')" onclick="wordClicked(' + q + ')">' + coloredSpans.join(' ') + '</td>'
+        }
       }
       if (wordMatchesVocabListAllMatches.length == 0) {
         var wordspan = '<td nowrap="nowrap" dialognum=' + q + ' style="text-align: center;" hovertext="' + english + '" id="WS' + randid + '" class="' + randid + ' hoverable wordspan ws' + q + '" onmouseover="onWordHover(\'' + randid + '\')" onmouseout="onWordLeave(\'' + randid + '\')" onclick="wordClicked(' + q + ')">' + word + '</td>';
       } else {
-        var wordspan = '<td nowrap="nowrap" dialognum=' + q + ' style="text-align: center; background-color: PapayaWhip;" hovertext="' + english + '" id="WS' + randid + '" class="' + randid + ' hoverable wordspan ws' + q + ' vocab WS' + randid + '" onmouseover="onWordHover(\'' + randid + '\')" onmouseout="onWordLeave(\'' + randid + '\')" onclick="wordClicked(' + q + ')">' + word + '</td>';
+        var wordspan = '<td nowrap="nowrap" dialognum=' + q + ' style="text-align: center; border-style: dotted; border-width: 1px" hovertext="' + english + '" id="WS' + randid + '" class="' + randid + ' hoverable wordspan ws' + q + ' vocab WS' + randid + '" onmouseover="onWordHover(\'' + randid + '\')" onmouseout="onWordLeave(\'' + randid + '\')" onclick="wordClicked(' + q + ')">' + word + '</td>';
         for (var k = 0; k < wordMatchesVocabListAllMatches.length; ++k) {
-          $('<span>' + q + ' </span>').appendTo('.vcbi' + wordMatchesVocabListAllMatches[k]);
+          $('<span onclick="wordClickedFromVocab(' + q + ')">' + q + ' </span>').appendTo('.vcbi' + wordMatchesVocabListAllMatches[k]);
         }
       }
       if (word == ' ') {
