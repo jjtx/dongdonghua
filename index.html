@@ -169,7 +169,7 @@ Optional Vocabulary File (VOCAB format):
 
 <div id="bottomOfScreen" style="position: fixed; top: 100%; left: 100%"></div>
 
-<div id='bottomFrame' style="position: fixed; top: 650px; left: 0; bottom: 0; width: 100%; overflow: auto;">
+<div id='bottomFrame' style="position: fixed; top: 650px; left: 0; bottom: 0; width: 100%; overflow-x: hidden; overflow-y: auto; word-wrap: normal;">
 
 <div id='settingsButtonArea' style="position: fixed; display: none; top: 650px; left: 0; width: 60px; height: 60px; overflow: hidden;">
 <button onclick="displaySettings()" id="settingsButton">settings</button>
@@ -177,7 +177,7 @@ Optional Vocabulary File (VOCAB format):
 <button onclick="displayQuizFrame()" id="quizButton">quiz</button>
 </div>
 
-<div id="translation" isFullTranslation='false' style="font-size: medium; display: inline-block; white-space: nowrap; position: relative"></div>
+<div id="translation" isFullTranslation='false' style="font-size: medium; background-color: white; display: inline-block; position: relative"></div>
 <div id='subpRegion' align="center"><img id='subpDisplay'></img></div>
 
 <div align="center">
@@ -192,13 +192,13 @@ Optional Vocabulary File (VOCAB format):
 </div>
 </div>
 
-<div id='vocabBottomFrame' style="display:none; background-color: white; position: fixed; top: 650px; left: 0; bottom: 0; width: 100%; overflow: auto;">
+<div id='vocabBottomFrame' style="display:none; background-color: white; position: fixed; top: 650px; left: 0; bottom: 0; width: 100%; overflow-x: hidden; overflow-y: auto; word-wrap: normal;">
 
 <div id='vocabBottomFrameButtonArea' style="position: fixed; width: 26px; height: 24px; overflow: hidden; z-index: 2">
 <button onclick="returnToViewingRegion()" id="returnToViewingRegionFromVocabRegionButton"><</button>
 </div>
 
-<div id="vocabRegion" style="font-size: medium; display: inline-block; white-space: nowrap; position: relative; margin-left: 10px; left: 4%;"></div>
+<div id="vocabRegion" style="font-size: medium; display: inline-block; position: relative; margin-left: 10px; left: 4%;"></div>
 
 </div>
 
